@@ -1,6 +1,6 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright © Noé Perard-Gayot 2021.
 
-#pragma once 
+#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
@@ -19,7 +19,7 @@ public:
 
 private:
 	/** Crosshair asset pointer */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Crosshair", meta = (AllowPrivateAccess="true"))
 	class UTexture2D* CrosshairTex;
 
 };
-

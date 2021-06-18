@@ -1,8 +1,7 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright © Noé Perard-Gayot 2021.
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "PTRGameMode.generated.h"
 
@@ -14,6 +13,3 @@ class APTRGameMode : public AGameModeBase
 public:
 	APTRGameMode();
 };
-
-
-

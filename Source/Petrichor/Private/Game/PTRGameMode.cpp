@@ -1,17 +1,12 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright © Noé Perard-Gayot 2021.
 
 #include "Game/PTRGameMode.h"
 #include "UI/PTRHUD.h"
 #include "Characters/PTRCharacter.h"
-#include "UObject/ConstructorHelpers.h"
 
-APTRGameMode::APTRGameMode()
-	: Super()
+APTRGameMode::APTRGameMode() : Super()
 {
-	// set default pawn class to our Blueprinted character
-	//static ConstructorHelpers::FClassFinder<APawn> PlayerPawnClassFinder(TEXT("/Game/FirstPersonCPP/Blueprints/FirstPersonCharacter"));
-	DefaultPawnClass = APTRCharacter::StaticClass();
 
-	// use our custom HUD class
+	DefaultPawnClass = APTRCharacter::StaticClass();
 	HUDClass = APTRHUD::StaticClass();
 }
