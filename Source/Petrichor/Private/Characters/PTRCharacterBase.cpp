@@ -5,6 +5,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/InputSettings.h"
 
 
@@ -37,13 +38,13 @@ APTRCharacterBase::APTRCharacterBase(const FObjectInitializer& ObjectInitializer
 	FirstPersonMesh->SetRelativeRotation(FRotator(1.9f, -19.19f, 5.2f));
 	FirstPersonMesh->SetRelativeLocation(FVector(-0.5f, -4.4f, -155.7f));
 
-
 	ThirdPersonMesh = ObjectInitializer.CreateDefaultSubobject<USkeletalMeshComponent>(this, ThirdPersonMeshName);
 	ThirdPersonMesh->SetOwnerNoSee(true);
 	ThirdPersonMesh->SetupAttachment(GetCapsuleComponent());
 	ThirdPersonMesh->bCastDynamicShadow = false;
 	ThirdPersonMesh->CastShadow = true;
 
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 }
 
 void APTRCharacterBase::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -54,6 +55,9 @@ void APTRCharacterBase::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	// Bind jump events
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &APTRCharacterBase::Crouch);
+		PlayerInputComponent->BindAction("Crouch", IE_Released, this, &APTRCharacterBase::StopCrouch);
 
 	// Bind fire event
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APTRCharacterBase::OnFire);
@@ -70,6 +74,16 @@ void APTRCharacterBase::SetupPlayerInputComponent(class UInputComponent* PlayerI
 void APTRCharacterBase::OnFire()
 {
 	// nothing to see here
+}
+
+void APTRCharacterBase::Crouch()
+{
+	GetCharacterMovement()->bWantsToCrouch = true;
+}
+
+void APTRCharacterBase::StopCrouch()
+{
+	GetCharacterMovement()->bWantsToCrouch = false;
 }
 
 void APTRCharacterBase::MoveForward(float Value)

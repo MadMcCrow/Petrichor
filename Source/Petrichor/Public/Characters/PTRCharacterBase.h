@@ -49,6 +49,8 @@ protected:
 	/** Plug code to use weapons here */
 	virtual void OnFire();
 
+	virtual void Crouch();
+	virtual void StopCrouch();
 
 	// Movement functions
 	virtual void MoveForward(float Val);
