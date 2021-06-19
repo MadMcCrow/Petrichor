@@ -44,6 +44,7 @@ we try to use emojis to make changes more meaningful and easily identify them
 | :sparkles:         | new feature                    |
 | :construction:     | WIP                            |
 | :art:              | graphical asset                |
+| :blue_square:      | Blueprints                     |
 | :wrench:           | config file                    |
 | :hammer_and_wrench:| editor related                 |
 | :no_entry_sign:    | does not compile / launch      |
