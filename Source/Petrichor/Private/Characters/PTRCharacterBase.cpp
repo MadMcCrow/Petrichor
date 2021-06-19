@@ -1,6 +1,6 @@
 // Copyright © Noé Perard-Gayot 2021.
 
-#include "Characters/PTRCharacter.h"
+#include "Characters/PTRCharacterBase.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -44,7 +44,14 @@ APTRCharacterBase::APTRCharacterBase(const FObjectInitializer& ObjectInitializer
 	ThirdPersonMesh->bCastDynamicShadow = false;
 	ThirdPersonMesh->CastShadow = true;
 
-	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+	// Nav Agent properties
+	// Todo : Make a function/system to set this
+	FNavAgentProperties NavAgentProperties;
+	NavAgentProperties.AgentRadius	= 48.f;
+	NavAgentProperties.AgentHeight	= 12.f;
+	NavAgentProperties.bCanCrouch	= true;
+
+	GetCharacterMovement()->NavAgentProps = NavAgentProperties;
 }
 
 void APTRCharacterBase::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -57,7 +64,7 @@ void APTRCharacterBase::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &APTRCharacterBase::Crouch);
-		PlayerInputComponent->BindAction("Crouch", IE_Released, this, &APTRCharacterBase::StopCrouch);
+	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &APTRCharacterBase::StopCrouch);
 
 	// Bind fire event
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APTRCharacterBase::OnFire);

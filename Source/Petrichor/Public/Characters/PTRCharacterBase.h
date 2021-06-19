@@ -5,6 +5,12 @@
 #include "GameFramework/Character.h"
 #include "PTRCharacterBase.generated.h"
 
+
+/**
+ *	Base character :
+ *	- handles movement
+ *	- Handle meshes
+ */
 UCLASS(Abstract, NotBlueprintable, config=Game)
 class APTRCharacterBase : public ACharacter
 {

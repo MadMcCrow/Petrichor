@@ -1,13 +1,15 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Characters/PTRCharacter.h"
-#include "Animation/AnimInstance.h"
-#include "Camera/CameraComponent.h"
-#include "Components/CapsuleComponent.h"
-#include "Components/InputComponent.h"
-#include "GameFramework/InputSettings.h"
+#include "Weapons/PTRWeaponComponent.h"
+
+FName APTRCharacter::WeaponComponentName= TEXT("WeaponComponent");
 
 APTRCharacter::APTRCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+	WeaponComponent = ObjectInitializer.CreateDefaultSubobject<UPTRWeaponComponent>(this, FirstPersonCameraName);
+}
 
+void APTRCharacter::AddWeapon(TSubclassOf<UPTRWeapon> Weapon)
+{
 }
