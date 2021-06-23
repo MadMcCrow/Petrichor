@@ -7,7 +7,7 @@ FName APTRCharacter::WeaponComponentName= TEXT("WeaponComponent");
 
 APTRCharacter::APTRCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	WeaponComponent = ObjectInitializer.CreateDefaultSubobject<UPTRWeaponComponent>(this, FirstPersonCameraName);
+	WeaponComponent = ObjectInitializer.CreateDefaultSubobject<UPTRWeaponComponent>(this, WeaponComponentName);
 }
 
 void APTRCharacter::AddWeapon(TSubclassOf<UPTRWeapon> Weapon)

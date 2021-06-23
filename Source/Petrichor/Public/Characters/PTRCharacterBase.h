@@ -20,8 +20,14 @@ class APTRCharacterBase : public ACharacter
 public:
 
 	APTRCharacterBase(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	virtual void RecalculateBaseEyeHeight() override;
+
+	virtual void Tick(float DeltaSeconds) override;
+
 protected:
 
+	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
 private:
@@ -49,14 +55,24 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Camera")
 	float BaseLookUpRate;
 
+	/** Default crouched eye height */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category= "Camera")
+	float CrouchedMovementDuration;
+
+private:
+
+	UPROPERTY(Transient, DuplicateTransient)
+	float CrouchedCurrentTime;
 
 protected:
 
 	/** Plug code to use weapons here */
 	virtual void OnFire();
 
-	virtual void Crouch();
+	virtual void StartCrouch();
 	virtual void StopCrouch();
+
+	virtual void UpdateCameraLocation(float DeltaSeconds);
 
 	// Movement functions
 	virtual void MoveForward(float Val);
