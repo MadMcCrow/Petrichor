@@ -1,2 +1,3 @@
 #! /usr/bin/bash
-"../UnrealEngine/Engine/Build/BatchFiles/Linux/GenerateProjectFiles.sh" $(find $(pwd) -iname "*.uproject")
+PathToUE=$(realpath "../UnrealEngine")
+"$PathToUE/Engine/Build/BatchFiles/Linux/GenerateProjectFiles.sh" -projectfiles -project=$(find $(pwd) -iname "*.uproject") -game -rocket -progress -VSCode
