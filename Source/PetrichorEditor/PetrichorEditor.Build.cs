@@ -2,14 +2,14 @@
 
 using UnrealBuildTool;
 
-public class Petrichor : ModuleRules
+public class PetrichorEditor : ModuleRules
 {
-	public Petrichor(ReadOnlyTargetRules Target) : base(Target)
+	public PetrichorEditor(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine",});
 
-		PrivateDependencyModuleNames.AddRange((new []{ "InputCore", "GameplayTags", "HeadMountedDisplay" }));
+		PrivateDependencyModuleNames.AddRange((new []{ "InputCore", "GameplayTags"}));
 	}
 }
