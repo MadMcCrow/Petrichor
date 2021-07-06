@@ -38,6 +38,7 @@ UAnimSequenceBase* UPTRCharacterAnimInstance::GetWeaponAnimation() const
 
 	if (OwningCharacter)
 	{
+		/*
 		if (UPTRWeaponComponent* WeaponComp = OwningCharacter->GetWeaponComponent())
 		{
 			if (auto Anim = WeaponSequences.Find(WeaponComp->GetCurrentWeaponStance()))
@@ -45,6 +46,7 @@ UAnimSequenceBase* UPTRCharacterAnimInstance::GetWeaponAnimation() const
 				return *Anim;
 			}
 		}
+		*/
 	}
 
 	if (auto Anim = WeaponSequences.Find(EPTRWeaponStance::None))
@@ -59,16 +61,16 @@ void UPTRCharacterAnimInstance::LoadWeaponAnimations()
 {
 	if (OwningCharacter)
 	{
-		if (UPTRWeaponComponent* WeaponComp = OwningCharacter->GetWeaponComponent())
+		if (UPTRWeaponComponent* WeaponComp = OwningCharacter->GetEquipedWeapon())
 		{
 			if(auto Weapon =  WeaponComp->GetWeapon())
 			{
 				switch (CharacterType)
 				{
-				case EPTRCharacterAnimInstanceType::FirstPerson:
+				case EPTRCharacterViewType::FirstPerson:
 					WeaponSequenceAssets = Weapon->WeaponAnimations;
 					break;
-				case EPTRCharacterAnimInstanceType::ThirdPerson:
+				case EPTRCharacterViewType::ThirdPerson:
 					WeaponSequenceAssets = Weapon->CharacterAnimations;
 					break;
 				}

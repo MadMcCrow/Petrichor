@@ -11,7 +11,7 @@
  *	- handles movement
  *	- Handle meshes
  */
-UCLASS(Abstract, NotBlueprintable, config=Game)
+UCLASS(ClassGroup=(PTR), Abstract, NotBlueprintable, config=Game)
 class APTRCharacterBase : public ACharacter
 {
 	GENERATED_BODY()

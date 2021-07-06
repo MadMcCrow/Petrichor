@@ -7,7 +7,7 @@
 
 
 
-UCLASS(config=Game, Category="Petrichor|Items")
+UCLASS(ClassGroup=(PTR), config=Game, Category="Petrichor|Items")
 class UPTRPickupItem : public UPTRItem
 {
     GENERATED_BODY()

@@ -17,11 +17,6 @@ void UPTRWeaponComponent::InitializeComponent()
 	SetIsReplicated(true);
 }
 
-UPTRWeapon* UPTRWeaponComponent::GetWeapon() const
-{
-	return WeaponClass.GetDefaultObject();
-}
-
 void UPTRWeaponComponent::HolsterWeapon()
 {
 
@@ -48,6 +43,39 @@ bool UPTRWeaponComponent::IsWeaponDrawn()
 	return	WeaponStance == EPTRWeaponStance::Idle		||
 			WeaponStance == EPTRWeaponStance::Primary	||
 			WeaponStance == EPTRWeaponStance::Secondary;
+}
+
+void UPTRWeaponComponent::SetWeaponMeshes(USkeletalMeshComponent* FPSWeapon, USkeletalMeshComponent* TPSWeapon)
+{
+	FirstPersonWeapon = FPSWeapon;
+	if (FirstPersonWeapon)
+	{
+		USkeletalMesh* WeaponMesh = GetWeapon()->WeaponMesh.Get();
+		if (WeaponMesh)
+		{
+			FirstPersonWeapon->SetSkeletalMesh(WeaponMesh, true);
+		}
+
+	}
+
+	ThirdPersonWeapon = TPSWeapon;
+	if (ThirdPersonWeapon)
+	{
+		USkeletalMesh* WeaponMesh = GetWeapon()->WeaponMesh.Get();
+		if (WeaponMesh)
+		{
+			ThirdPersonWeapon->SetSkeletalMesh(WeaponMesh, true);
+		}
+	}
+}
+
+void UPTRWeaponComponent::SetWeapon(TSubclassOf<UPTRWeapon> NewWeaponClass)
+{
+	// make it network ready
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		Net_SetWeapon(NewWeaponClass);
+	}
 }
 
 void UPTRWeaponComponent::OnFire(EPTRFireMode FireMode)

@@ -5,7 +5,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "PTRGameMode.generated.h"
 
-UCLASS(minimalapi)
+UCLASS(ClassGroup=(PTR), minimalapi)
 class APTRGameMode : public AGameModeBase
 {
 	GENERATED_BODY()

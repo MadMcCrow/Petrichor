@@ -2,17 +2,20 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "Components/SkeletalMeshComponent.h"
+
+#include "Components/ActorComponent.h"
+
+#include "Petrichor.h"
 #include "PTRWeapon.h"
-#include "PTRWeaponTypes.h"
 #include "PTRWeaponComponent.generated.h"
 
 
 
+class USkeletalMeshComponent;
+
 
 UCLASS( ClassGroup=(PTR), Within="PTRCharacter" )
-class PETRICHOR_API UPTRWeaponComponent : public USkeletalMeshComponent
+class PETRICHOR_API UPTRWeaponComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
@@ -22,7 +25,6 @@ public:
 
 	virtual void InitializeComponent() override;
 
-	UPTRWeapon* GetWeapon() const;
 
 	/**
 	 *	@fn HolsterWeapon
@@ -59,8 +61,13 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Weapon")
 	bool IsWeaponDrawn();
 
-protected:
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void SetWeaponMeshes(USkeletalMeshComponent* FPSWeapon, USkeletalMeshComponent* TPSWeapon);
 
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void SetWeapon(TSubclassOf<UPTRWeapon> NewWeaponClass);
+
+protected:
 
 	virtual void OnFire(EPTRFireMode FireMode);
 
@@ -91,6 +98,22 @@ private:
 	UPROPERTY(Transient, DuplicateTransient, ReplicatedUsing = OnRep_WeaponClass)
 	TSubclassOf<UPTRWeapon> WeaponClass;
 
+	/** For now we use CDO as weapon to use */
 	UPROPERTY(Transient)
 	class UPTRWeapon* WeaponCDO;
+
+	/** Only makes sens for owner */
+	UPROPERTY(Transient, DuplicateTransient)
+	USkeletalMeshComponent* FirstPersonWeapon;
+
+	/** Only makes sens for TPS view */
+	UPROPERTY(Transient, DuplicateTransient)
+	USkeletalMeshComponent* ThirdPersonWeapon;
+
+
+public:
+
+	FORCEINLINE TMap<EPTRCharacterViewType, USkeletalMeshComponent*> GetWeaponMeshes() const {return {{EPTRCharacterViewType::FirstPerson, FirstPersonWeapon}, {EPTRCharacterViewType::ThirdPerson,ThirdPersonWeapon}};}
+	FORCEINLINE UPTRWeapon* GetWeapon() const {return UPTRWeapon::GetWeaponObject(this, WeaponClass);}
+	FORCEINLINE TSubclassOf<UPTRWeapon> GetWeaponClass() const {return WeaponClass;}
 };

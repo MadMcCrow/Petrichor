@@ -7,7 +7,7 @@
 
 
 
-UCLASS(Category="Petrichor|Items")
+UCLASS(ClassGroup=(PTR), Category="Petrichor|Items")
 class UPTRItem : public UPrimaryDataAsset
 {
     GENERATED_BODY()

@@ -1,13 +1,13 @@
 // Copyright © Noé Perard-Gayot 2021.
 
 #pragma once
- 	
+
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "PTRInventoryComponent.generated.h"
 
 
-USTRUCT(BlueprintType, Category="Petrichor|Items")
+USTRUCT( BlueprintType, Category="Petrichor|Items")
 struct FPTRInventoryItem
 {
     GENERATED_BODY()
@@ -31,7 +31,7 @@ struct FPTRInventoryItem
 };
 
 
-UCLASS(config=Game, Category="Petrichor|Items")
+UCLASS(ClassGroup=(PTR), config=Game, Category="Petrichor|Items")
 class UPTRInventoryComponent : public UActorComponent
 {
     GENERATED_BODY()
