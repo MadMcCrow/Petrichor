@@ -27,7 +27,7 @@ UPTRWeaponComponent* APTRCharacter::AddWeapon(TSubclassOf<UPTRWeapon> WeaponClas
 {
 	if (WeaponClass == nullptr)
 	{
-		return;
+		return nullptr;
 	}
 
 	const UPTRWeapon* Weapon = UPTRWeapon::GetWeaponObject(this, WeaponClass);
