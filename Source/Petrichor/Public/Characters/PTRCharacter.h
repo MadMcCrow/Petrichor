@@ -19,6 +19,8 @@ public:
 
 	APTRCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+	virtual void OnConstruction(const FTransform& Transform) override;
+
 	/**
 	 *	Add a weapon to our character
 	 *	@param WeaponClass	The weapon to use for this one
@@ -88,7 +90,7 @@ private:
 	/**
 	*	Weapon Mesh for 3rd person view
 	*/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(Transient, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* ThirdPersonWeaponMeshComponent;
 
 public:

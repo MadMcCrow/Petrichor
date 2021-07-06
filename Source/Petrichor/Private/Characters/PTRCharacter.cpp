@@ -15,12 +15,22 @@ APTRCharacter::APTRCharacter(const FObjectInitializer& ObjectInitializer)
     ,WeaponComponentClass(UPTRWeaponComponent::StaticClass())
 {
 	// WeaponMeshes
+	// FP
 	FirstPersonWeaponMeshComponent = ObjectInitializer.CreateDefaultSubobject<USkeletalMeshComponent>(this, FirstPersonWeaponMeshName);
-	ThirdPersonWeaponMeshComponent = ObjectInitializer.CreateDefaultSubobject<USkeletalMeshComponent>(this, ThirdPersonWeaponMeshName);
 	FirstPersonWeaponMeshComponent->SetupAttachment(GetFirstPersonMesh(), WeaponSocketName);
+	FirstPersonWeaponMeshComponent->SetOnlyOwnerSee(true);
+	// TP
+	ThirdPersonWeaponMeshComponent = ObjectInitializer.CreateDefaultSubobject<USkeletalMeshComponent>(this, ThirdPersonWeaponMeshName);
 	ThirdPersonWeaponMeshComponent->SetupAttachment(GetThirdPersonMesh(), WeaponSocketName);
+	ThirdPersonWeaponMeshComponent->SetOnlyOwnerSee(false);
+	ThirdPersonWeaponMeshComponent->SetOwnerNoSee(true);
+}
 
-
+void APTRCharacter::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
+	ThirdPersonWeaponMeshComponent->SetSkeletalMesh(FirstPersonWeaponMeshComponent->SkeletalMesh);
+	ThirdPersonWeaponMeshComponent->SetMasterPoseComponent(FirstPersonWeaponMeshComponent);
 }
 
 UPTRWeaponComponent* APTRCharacter::AddWeapon(TSubclassOf<UPTRWeapon> WeaponClass, bool bEquip)

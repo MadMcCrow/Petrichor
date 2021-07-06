@@ -20,6 +20,9 @@ public:
 private:
 	/** Crosshair asset pointer */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Crosshair", meta = (AllowPrivateAccess="true"))
-	class UTexture2D* CrosshairTex;
+	class UMaterialInterface* Crosshair;
 
+	/** Crosshair asset pointer */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Crosshair", meta = (AllowPrivateAccess="true"))
+	FVector2D CrosshairSize;
 };
