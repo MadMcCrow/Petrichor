@@ -23,9 +23,10 @@ public:
 	 *	Add a weapon to our character
 	 *	@param WeaponClass	The weapon to use for this one
 	 *	@param bEquip		Wether we shall call EquipWeapon right after adding it
+	 *	@todo: Make this networked
 	 */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-	virtual void AddWeapon(TSubclassOf<UPTRWeapon> WeaponClass, bool bEquip = true);
+	virtual UPTRWeaponComponent* AddWeapon(TSubclassOf<UPTRWeapon> WeaponClass, bool bEquip = true);
 
 	/**
 	*	Equip a weapon making it the one currently used
@@ -69,7 +70,7 @@ private:
 	 *	Weapon component will handle firing etc...
 	 *	There's one per weapon we have on us
 	 */
-	UPROPERTY(Transient,Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(Transient, VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	TMap<int32,UPTRWeaponComponent*> Weapons;
 
 	/**

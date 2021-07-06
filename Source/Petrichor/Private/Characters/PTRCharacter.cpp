@@ -23,7 +23,7 @@ APTRCharacter::APTRCharacter(const FObjectInitializer& ObjectInitializer)
 
 }
 
-void APTRCharacter::AddWeapon(TSubclassOf<UPTRWeapon> WeaponClass, bool bEquip)
+UPTRWeaponComponent* APTRCharacter::AddWeapon(TSubclassOf<UPTRWeapon> WeaponClass, bool bEquip)
 {
 	if (WeaponClass == nullptr)
 	{
@@ -40,10 +40,12 @@ void APTRCharacter::AddWeapon(TSubclassOf<UPTRWeapon> WeaponClass, bool bEquip)
 		WeaponComp->SetWeapon(WeaponClass);
 		WeaponComp->RegisterComponent();
 		WeaponComp->SetIsReplicated(true);
-
 		// Todo : add safety for already present weapon at index :
 		Weapons.Add(Weapon->WantedIndex, WeaponComp);
+		return WeaponComp;
 	}
+
+	return nullptr;
 }
 
 void APTRCharacter::EquipWeapon(TSubclassOf<UPTRWeapon> WeaponClass)
@@ -76,6 +78,5 @@ UPTRWeaponComponent* APTRCharacter::GetEquipedWeapon() const
 void APTRCharacter::GetLifetimeReplicatedProps( TArray< FLifetimeProperty > & OutLifetimeProps ) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME( APTRCharacter, Weapons );
 	DOREPLIFETIME( APTRCharacter, ActiveWeaponIndex );
 }
