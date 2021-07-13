@@ -11,5 +11,5 @@ class APTRGameMode : public AGameModeBase
 	GENERATED_BODY()
 
 public:
-	APTRGameMode();
+	APTRGameMode(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 };

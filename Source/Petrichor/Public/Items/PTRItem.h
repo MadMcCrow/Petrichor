@@ -13,14 +13,25 @@ class UPTRItem : public UPrimaryDataAsset
     GENERATED_BODY()
 
 public:
+    // Default CTR
+    UPTRItem(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+    /**
+     *  Reference this in your asset manager
+     */
     UPROPERTY(EditAnywhere, blueprintReadOnly, Category="System")
     FPrimaryAssetType ItemType;
 
+    /**
+     *  The unique name for this item
+     */
+    UPROPERTY(VisibleAnywhere, blueprintReadOnly, Category="System")
+    FName InternalName;
 
+    // uniqueID used for referencing this
     virtual FPrimaryAssetId GetPrimaryAssetId() const override
     {
-        return FPrimaryAssetId(ItemType, GetFName());
+        return FPrimaryAssetId(ItemType, InternalName);
     }
 
 protected:
@@ -28,6 +39,10 @@ protected:
     /** Name displayed to the user. */
     UPROPERTY(EditAnywhere, blueprintReadOnly, Category="Info")
     FText DisplayName;
+
+    /** Extra Info we can display to the user. */
+    UPROPERTY(EditAnywhere, blueprintReadOnly, Category="Info")
+    FText Description;
 
 
 
