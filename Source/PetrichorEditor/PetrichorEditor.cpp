@@ -1,7 +1,15 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "Petrichor.h"
-#include "Modules/ModuleManager.h"
+#include "PetrichorEditor.h"
 
-IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, Petrichor, "Petrichor" );
- 
+IMPLEMENT_MODULE(FPTREditorModule, PetrichorEditor);
+
+void FPTREditorModule::StartupModule()
+{
+
+}
+
+void FPTREditorModule::ShutdownModule()
+{
+
+}

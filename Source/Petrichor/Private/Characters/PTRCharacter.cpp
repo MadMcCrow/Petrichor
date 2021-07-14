@@ -1,8 +1,9 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright © Noé Perard-Gayot 2021.
 
 #include "Characters/PTRCharacter.h"
 
 #include "Net/UnrealNetwork.h"
+#include "Player/PTRPlayerState.h"
 #include "Weapons/PTRWeaponComponent.h"
 
 FName APTRCharacter::WeaponComponentBaseName	= TEXT("WeaponComponent");
@@ -31,6 +32,34 @@ void APTRCharacter::OnConstruction(const FTransform& Transform)
 	Super::OnConstruction(Transform);
 	ThirdPersonWeaponMeshComponent->SetSkeletalMesh(FirstPersonWeaponMeshComponent->SkeletalMesh);
 	ThirdPersonWeaponMeshComponent->SetMasterPoseComponent(FirstPersonWeaponMeshComponent);
+}
+
+void APTRCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	// Server only
+	if (APTRPlayerState* PS = GetPlayerState<APTRPlayerState>())
+	{
+		// Set the ASC on the Server. Clients do this in OnRep_PlayerState()
+		AbilitySystemComponent = Cast<UPTRAbilitySystemComponent>(PS->GetAbilitySystemComponent());
+		// AI won't have PlayerControllers so we can init again here just to be sure. No harm in initing twice for heroes that have PlayerControllers.
+		PS->GetAbilitySystemComponent()->InitAbilityActorInfo(PS, this);
+	}
+
+}
+
+void APTRCharacter::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+	// Client only
+	if (APTRPlayerState* PS = GetPlayerState<APTRPlayerState>())
+	{
+		// Set the ASC for clients. Server does this in PossessedBy.
+		AbilitySystemComponent = Cast<UPTRAbilitySystemComponent>(PS->GetAbilitySystemComponent());
+
+		// Init ASC Actor Info for clients. Server will init its ASC when it possesses a new Actor.
+		AbilitySystemComponent->InitAbilityActorInfo(PS, this);
+	}
 }
 
 UPTRWeaponComponent* APTRCharacter::AddWeapon(TSubclassOf<UPTRWeapon> WeaponClass, bool bEquip)

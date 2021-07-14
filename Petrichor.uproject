@@ -1,13 +1,33 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{D6944726-B958-489F-B46E-685602450FC5}",
+	"EngineAssociation": "4.26",
 	"Category": "",
 	"Description": "",
 	"Modules": [
 		{
 			"Name": "Petrichor",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine",
+				"AIModule",
+				"GameplayAbilities",
+				"UMG"
+			]
+		},
+		{
+			"Name": "PetrichorEditor",
+			"Type": "Editor",
+			"LoadingPhase": "PostDefault",
+			"AdditionalDependencies": [
+				"Engine"
+			]
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "GameplayAbilities",
+			"Enabled": true
 		}
 	]
 }

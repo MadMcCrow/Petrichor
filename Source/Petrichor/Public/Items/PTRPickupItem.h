@@ -12,4 +12,8 @@ class UPTRPickupItem : public UPTRItem
 {
     GENERATED_BODY()
 
+public:
+    UFUNCTION(BlueprintNativeEvent, Category="Item|Pickup")
+    void OnPickup();
+    virtual void OnPickup_Implementation();
 };

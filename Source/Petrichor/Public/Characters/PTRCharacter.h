@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <GameplayAbilitySystem/PTRAbilitySystemComponent.h>
+
 #include "PTRCharacterBase.h"
 #include "PTRCharacter.generated.h"
 
@@ -19,7 +21,11 @@ public:
 
 	APTRCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+	// APawn API
 	virtual void OnConstruction(const FTransform& Transform) override;
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void OnRep_PlayerState() override;
+	// \APawn API
 
 	/**
 	 *	Add a weapon to our character
@@ -65,6 +71,12 @@ protected:
 	*/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	TSubclassOf<UPTRWeaponComponent> WeaponComponentClass;
+
+	/**
+	 *	Ability Component from PlayerState
+	 */
+	UPROPERTY(Transient)
+	class UPTRAbilitySystemComponent* AbilitySystemComponent;
 
 private:
 
