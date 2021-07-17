@@ -1,7 +1,7 @@
 // Copyright © Noé Perard-Gayot 2021.
 
 #include "Characters/PTRCharacter.h"
-
+#include "GameplayAbilitySystem/PTRAbilitySystemComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/PTRPlayerState.h"
 #include "Weapons/PTRWeaponComponent.h"
@@ -60,6 +60,11 @@ void APTRCharacter::OnRep_PlayerState()
 		// Init ASC Actor Info for clients. Server will init its ASC when it possesses a new Actor.
 		AbilitySystemComponent->InitAbilityActorInfo(PS, this);
 	}
+}
+
+UAbilitySystemComponent* APTRCharacter::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
 }
 
 UPTRWeaponComponent* APTRCharacter::AddWeapon(TSubclassOf<UPTRWeapon> WeaponClass, bool bEquip)

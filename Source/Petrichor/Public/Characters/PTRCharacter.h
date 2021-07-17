@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include <GameplayAbilitySystem/PTRAbilitySystemComponent.h>
-
+#include "AbilitySystemInterface.h"
 #include "PTRCharacterBase.h"
 #include "PTRCharacter.generated.h"
 
@@ -14,7 +13,7 @@ class USkeletalMeshComponent;
 
 
 UCLASS(Abstract, Blueprintable, config=Game)
-class APTRCharacter : public APTRCharacterBase
+class APTRCharacter : public APTRCharacterBase, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 public:
@@ -26,6 +25,10 @@ public:
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;
 	// \APawn API
+
+	// IAbilitySystemInterface API
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	// \IAbilitySystemInterface API
 
 	/**
 	 *	Add a weapon to our character

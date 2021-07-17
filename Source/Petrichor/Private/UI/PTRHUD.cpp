@@ -1,10 +1,13 @@
 // Copyright © Noé Perard-Gayot 2021.
 
 #include "UI/PTRHUD.h"
+
 #include "Engine/Canvas.h"
-#include "Engine/Texture2D.h"
-#include "TextureResource.h"
 #include "CanvasItem.h"
+#include "Blueprint/UserWidget.h"
+#include "Blueprint/WidgetBlueprintGeneratedClass.h"
+
+#include "UI/PTRHUDWidget.h" // Requiered
 
 
 APTRHUD::APTRHUD() : Super() , CrosshairSize(128,128)
@@ -28,4 +31,23 @@ void APTRHUD::DrawHUD()
 		TileItem.BlendMode = SE_BLEND_Translucent;
 		Canvas->DrawItem( TileItem );
 	}
+}
+
+void APTRHUD::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (auto PC = GetOwningPlayerController())
+	{
+		for (auto SoftWidgetClassItr : HUDWidgets)
+		{
+			if (TSubclassOf<UUserWidget> WidgetClass = Cast<UWidgetBlueprintGeneratedClass>(SoftWidgetClassItr.Get()))
+			{
+				auto HUDWidget = UUserWidget::CreateWidgetInstance(*PC, WidgetClass, MakeUniqueObjectName(this,WidgetClass, NAME_None));
+				// TODO : Add ZOrder settings
+				HUDWidget->AddToPlayerScreen();
+			}
+		}
+	}
+
 }
