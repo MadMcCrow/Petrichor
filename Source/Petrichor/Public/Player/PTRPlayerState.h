@@ -38,10 +38,18 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GameplayAbilitySystem", meta=(AllowPrivateAccess="true"))
 	class UPTRAbilitySystemComponent * AbilitySystemComponent;
 
+	/** the Player attribute set */
+	UPROPERTY()
+	class UPTRHealthArmorAttributeSet* CharacterAttributeSet;
+
+
 public:
 
 	/** Simple inline getter for component */
 	FORCEINLINE UPTRInventoryComponent* GetPlayerInventoryComponent() const { return PlayerInventory;}
+
+	/** Simple inline getter for component */
+	FORCEINLINE class UPTRHealthArmorAttributeSet* GetCharacterAttributeSet() const {return CharacterAttributeSet;}
 
 	// default name for override in child classes
 	static FName InventoryComponentName;

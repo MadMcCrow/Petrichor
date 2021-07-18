@@ -41,7 +41,7 @@ void APTRHUD::BeginPlay()
 	{
 		for (auto SoftWidgetClassItr : HUDWidgets)
 		{
-			if (TSubclassOf<UUserWidget> WidgetClass = Cast<UWidgetBlueprintGeneratedClass>(SoftWidgetClassItr.Get()))
+			if (TSubclassOf<UUserWidget> WidgetClass = Cast<UWidgetBlueprintGeneratedClass>(SoftWidgetClassItr.LoadSynchronous()))
 			{
 				auto HUDWidget = UUserWidget::CreateWidgetInstance(*PC, WidgetClass, MakeUniqueObjectName(this,WidgetClass, NAME_None));
 				// TODO : Add ZOrder settings

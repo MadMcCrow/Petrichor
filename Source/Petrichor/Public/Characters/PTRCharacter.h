@@ -76,12 +76,16 @@ protected:
 	TSubclassOf<UPTRWeaponComponent> WeaponComponentClass;
 
 	/**
-	 *	Ability Component from PlayerState
+	 *	Ability Component from PlayerState or create if there's no player state
 	 */
 	UPROPERTY(Transient)
 	class UPTRAbilitySystemComponent* AbilitySystemComponent;
 
 private:
+
+	/** CharacterAttributeSet from PlayerState or create if there's no player state */
+	UPROPERTY()
+	class UPTRHealthArmorAttributeSet* CharacterAttributeSet;
 
 	/**
 	 *	Weapon component will handle firing etc...
