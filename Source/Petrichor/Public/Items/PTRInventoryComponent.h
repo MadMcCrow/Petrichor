@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Engine/DataTable.h"
+
 #include "PTRInventoryComponent.generated.h"
 
 // forward declaration
@@ -16,11 +18,15 @@ DECLARE_LOG_CATEGORY_EXTERN(LogPTRInventory, Log, All);
  *	Advanced struct for holding items counts
  */
 USTRUCT(BlueprintType, Category="Petrichor|Items")
-struct FPTRInventoryItem : public FPrimaryAssetId
+struct FPTRInventoryItem : public FTableRowBase
 {
 	GENERATED_BODY()
 
 public:
+
+	/** Unique ID of that Item */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowedClasses="PTRItem"))
+	FPrimaryAssetId AssetId;
 
 	/** Amount stored */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -40,19 +46,19 @@ public:
 	}
 
 	// default CTR
-	FPTRInventoryItem(): FPrimaryAssetId(), Count(0)
+	FPTRInventoryItem(): AssetId(FPrimaryAssetId()), Count(0)
 	{
 	}
 
 	// hash for Set and maps
-	inline friend uint32 GetTypeHash(const FPTRInventoryItem& Key)
+	FORCEINLINE friend uint32 GetTypeHash(const FPTRInventoryItem& Key)
 	{
 		// basically call super
-		return GetTypeHash(FPrimaryAssetId(Key));
+		return GetTypeHash(Key.AssetId);
 	}
 
 	// equal operator for comparisons
-	inline bool operator==(const FPTRInventoryItem& Other) const
+	bool operator==(const FPTRInventoryItem& Other) const
 	{
 		const uint32 A = GetTypeHash(*this);
 		const uint32 B = GetTypeHash(Other);
@@ -63,6 +69,12 @@ public:
 		}
 		return A == B && Count == Other.Count;
 	}
+
+	// implicit conversion operator
+	operator FPrimaryAssetId() const {return AssetId;}
+
+	// To string export function
+	FString ToString() const {return AssetId.ToString();}
 
 	bool IsNull() const;
 };
@@ -87,7 +99,7 @@ public:
 	 *  @return true if succeeded, false otherwise
 	 */
 	UFUNCTION(BlueprintCallable, Category="Inventory")
-	bool AddItem(const TSoftObjectPtr<UPTRItem>& Item, int32 Count);
+	bool AddItem(UPARAM(meta=(AllowClasses="PTRItem")) const FSoftObjectPath& Item, int32 Count);
 
 	/**
 	 *  RemoveItem
@@ -95,7 +107,7 @@ public:
 	 *  @return true if succeeded, false otherwise
 	 */
 	UFUNCTION(BlueprintCallable, Category="Inventory")
-	bool RemoveItem(const TSoftObjectPtr<UPTRItem>& Item, int32 Count);
+	bool RemoveItem(UPARAM(meta=(AllowClasses="PTRItem")) const FSoftObjectPath& Item, int32 Count);
 
 	/**
 	 *  ItemCount
@@ -103,7 +115,7 @@ public:
 	 *  @return The amount of the item stored, or 0 if not present
 	 */
 	UFUNCTION(BlueprintPure, Category="Inventory")
-	int32 ItemCount(const TSoftObjectPtr<UPTRItem>& Item) const;
+	int32 ItemCount(UPARAM(meta=(AllowClasses="PTRItem")) const FSoftObjectPath& Item) const;
 
 	/**
 	 *  ItemCount
@@ -111,13 +123,13 @@ public:
 	 *  @return The amount of the item stored, or 0 if not present
 	 */
 	UFUNCTION(BlueprintPure, Category="Inventory")
-	bool HasItem(const TSoftObjectPtr<UPTRItem>& Item) const;
+	bool HasItem(UPARAM(meta=(AllowClasses="PTRItem")) const FSoftObjectPath& Item) const;
 
 	/**
 	 * Simple getter that returns the path without loading the object.
 	 */
 	UFUNCTION(BlueprintPure, Category="ItemID")
-	static TSoftObjectPtr<UPTRItem> GetAssetFromID(const FPrimaryAssetId& AssetID);
+	static FSoftObjectPath GetAssetFromID(const FPrimaryAssetId& AssetID);
 
 	/**
 	* Simple getter that loads synchronously an item and gets it's correct info.
@@ -126,6 +138,21 @@ public:
 	*/
 	UFUNCTION(BlueprintPure, Category="ItemID")
 	static FPrimaryAssetId GetAssetID( const TSoftObjectPtr<UPTRItem>& Item);
+
+	/**
+	*  GetItems
+	*  @brief  Getter for the item set.
+	*  meant for debugging
+	*/
+	UFUNCTION(BlueprintPure, Category="Inventory")
+	TSet<FPTRInventoryItem> GetItems() const;
+
+
+	/**
+	 * Init the inventory with a predetermined set
+	 * @note can only be called from server
+	 */
+	void InitInventory(TSet<FPTRInventoryItem> &InitItems);
 
 
 protected:

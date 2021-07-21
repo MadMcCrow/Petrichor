@@ -1,6 +1,6 @@
 // Copyright © Noé Perard-Gayot 2021.
 
-#include "Game/PTRGameMode.h"
+#include "PTRGameMode.h"
 #include "UI/PTRHUD.h"
 #include "Characters/PTRCharacter.h"
 #include "Player/PTRPlayerState.h"

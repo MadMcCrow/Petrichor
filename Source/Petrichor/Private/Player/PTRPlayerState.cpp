@@ -2,26 +2,51 @@
 
 
 #include "Player/PTRPlayerState.h"
+
+#include "Engine/AssetManager.h"
 #include "Items/PTRInventoryComponent.h"
-#include "GameplayAbilitySystem/PTRAbilitySystemComponent.h"
-#include "GameplayAbilitySystem/Attributes/PTRCharacterAttributeSet.h"
+#include "Attributes/PTRAttributeComponent.h"
 
 FName APTRPlayerState::InventoryComponentName	= TEXT("InventoryComponent");
-FName APTRPlayerState::GASComponentName			= TEXT("AbilitySystemComponent");
+FName APTRPlayerState::AttributeComponentName	= TEXT("AttributeComponent");
 
 APTRPlayerState::APTRPlayerState(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	PlayerInventory			= ObjectInitializer.CreateDefaultSubobject<UPTRInventoryComponent>(this, InventoryComponentName, true);
-	AbilitySystemComponent	= ObjectInitializer.CreateDefaultSubobject<UPTRAbilitySystemComponent>(this, GASComponentName);
-	AbilitySystemComponent->SetIsReplicated(true);
-
-	// Create the attribute set, this replicates by default
-	// Adding it as a subobject of the owning actor of an AbilitySystemComponent
-	// automatically registers the AttributeSet with the AbilitySystemComponent
-	CharacterAttributeSet = CreateDefaultSubobject<UPTRCharacterAttributeSet>(TEXT("CharacterAttributeSet"));
+	PlayerInventory		= ObjectInitializer.CreateDefaultSubobject<UPTRInventoryComponent>(this, InventoryComponentName, true);
+	PlayerAttributes	= ObjectInitializer.CreateDefaultSubobject<UPTRAttributeComponent>(this, AttributeComponentName, true);
 }
 
-UAbilitySystemComponent* APTRPlayerState::GetAbilitySystemComponent() const
+void APTRPlayerState::BeginPlay()
 {
-	return AbilitySystemComponent;
+	Super::BeginPlay();
+
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		if (const UDataTable* ItemDataTable = StartingItem.LoadSynchronous())
+		{
+			TArray<FPTRInventoryItem*>	StartingItemsPtr;
+			TSet<FPTRInventoryItem>		StartingItems;
+
+			ItemDataTable->GetAllRows<FPTRInventoryItem>(TEXT("APTRPlayerState : Getting Starting items"), StartingItemsPtr);
+
+			UAssetManager* Manager = UAssetManager::GetIfValid();
+			if (!Manager)
+			{
+				return;
+			}
+
+			for (auto ItemItr : StartingItemsPtr)
+			{
+				if (ItemItr)
+				{
+					if (!Manager->GetPrimaryAssetPath(ItemItr->AssetId).IsNull())
+					{
+						StartingItems.Add(*ItemItr);
+					}
+				}
+			}
+			// init the inventory
+			PlayerInventory->InitInventory(StartingItems);
+		}
+	}
 }

@@ -2,8 +2,9 @@
 
 #pragma once
 
-#include "AbilitySystemInterface.h"
 #include "PTRCharacterBase.h"
+#include "Items/PTRInventoryComponent.h"
+
 #include "PTRCharacter.generated.h"
 
 
@@ -13,7 +14,7 @@ class USkeletalMeshComponent;
 
 
 UCLASS(Abstract, Blueprintable, config=Game)
-class APTRCharacter : public APTRCharacterBase, public IAbilitySystemInterface
+class APTRCharacter : public APTRCharacterBase
 {
 	GENERATED_BODY()
 public:
@@ -26,9 +27,13 @@ public:
 	virtual void OnRep_PlayerState() override;
 	// \APawn API
 
-	// IAbilitySystemInterface API
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-	// \IAbilitySystemInterface API
+
+	/**
+	*	@return Currenlty equiped weapon or nullptr if nothing found
+	*/
+	UFUNCTION(BlueprintPure, Category="Weapon")
+	UPTRInventoryComponent* GetInventory() const;
+
 
 	/**
 	 *	Add a weapon to our character
@@ -60,6 +65,8 @@ public:
 	UPTRWeaponComponent* GetEquipedWeapon() const;
 
 
+
+
 protected:
 
 	/**
@@ -75,17 +82,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	TSubclassOf<UPTRWeaponComponent> WeaponComponentClass;
 
-	/**
-	 *	Ability Component from PlayerState or create if there's no player state
-	 */
-	UPROPERTY(Transient)
-	class UPTRAbilitySystemComponent* AbilitySystemComponent;
-
 private:
-
-	/** CharacterAttributeSet from PlayerState or create if there's no player state */
-	UPROPERTY()
-	class UPTRHealthArmorAttributeSet* CharacterAttributeSet;
 
 	/**
 	 *	Weapon component will handle firing etc...

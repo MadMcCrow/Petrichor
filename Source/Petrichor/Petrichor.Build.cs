@@ -12,7 +12,11 @@ public class Petrichor : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange((new []{ "InputCore", "AIModule" }));
 
-		PrivateDependencyModuleNames.AddRange((new []{ "GameplayAbilities", "GameplayTags", "GameplayTasks" }));
+		// We do not need GAS , mouaaaahahaha
+		// PrivateDependencyModuleNames.AddRange((new []{ "GameplayAbilities", "GameplayTags", "GameplayTasks" }));
+
+		// Movie player for cinematics, Loading screens, etc...
+		PrivateDependencyModuleNames.AddRange((new []{ "MoviePlayer"}));
 
 		// Add support for networking
 		PrivateDependencyModuleNames.Add("OnlineSubsystem");

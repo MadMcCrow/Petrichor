@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Items/PTRPickupItem.h"
+#include "Items/PTRItem.h"
 #include "PTRAmmunition.generated.h"
 
 
@@ -11,7 +11,7 @@
  *	They are used to find out if you have ammo in your inventory
  */
 UCLASS(ClassGroup=(PTR), Category="Petrichor|Items")
-class PETRICHOR_API UPTRAmmunition : public UPTRPickupItem
+class PETRICHOR_API UPTRAmmunition : public UPTRItem
 {
 	GENERATED_BODY()
 

@@ -1,6 +1,6 @@
 // Copyright © Noé Perard-Gayot 2021.
 
-#include "Items/PTRPickupActor.h"
+#include "Actors/PTRPickupActor.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 

@@ -1,7 +1,6 @@
 // Copyright © Noé Perard-Gayot 2021.
 
 #include "Characters/PTRCharacter.h"
-#include "GameplayAbilitySystem/PTRAbilitySystemComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/PTRPlayerState.h"
 #include "Weapons/PTRWeaponComponent.h"
@@ -39,19 +38,6 @@ void APTRCharacter::PossessedBy(AController* NewController)
 	// this function is Server only
 	Super::PossessedBy(NewController);
 
-	if (APTRPlayerState* PS = GetPlayerState<APTRPlayerState>())
-	{
-		// Set the ASC on the Server. Clients do this in OnRep_PlayerState()
-		AbilitySystemComponent = Cast<UPTRAbilitySystemComponent>(PS->GetAbilitySystemComponent());
-		// AI won't have PlayerControllers so we can init again here just to be sure. No harm in initing twice for heroes that have PlayerControllers.
-		PS->GetAbilitySystemComponent()->InitAbilityActorInfo(PS, this);
-		CharacterAttributeSet = PS->GetCharacterAttributeSet();
-	}
-	else
-	{
-		// do for non player state characters
-	}
-
 }
 
 void APTRCharacter::OnRep_PlayerState()
@@ -59,23 +45,17 @@ void APTRCharacter::OnRep_PlayerState()
 	// this function is Client only
 	Super::OnRep_PlayerState();
 
-	if (APTRPlayerState* PS = GetPlayerState<APTRPlayerState>())
-	{
-		// Set the ASC for clients. Server does this in PossessedBy.
-		AbilitySystemComponent = Cast<UPTRAbilitySystemComponent>(PS->GetAbilitySystemComponent());
-
-		// Init ASC Actor Info for clients. Server will init its ASC when it possesses a new Actor.
-		AbilitySystemComponent->InitAbilityActorInfo(PS, this);
-	}
-	else
-	{
-		// do for non player state characters
-	}
 }
 
-UAbilitySystemComponent* APTRCharacter::GetAbilitySystemComponent() const
+UPTRInventoryComponent* APTRCharacter::GetInventory() const
 {
-	return AbilitySystemComponent;
+	if (const APTRPlayerState* PS = GetPlayerState<APTRPlayerState>())
+	{
+		return PS->GetInventoryComponent();
+	}
+
+	// return nullptr... for now
+	return nullptr;
 }
 
 UPTRWeaponComponent* APTRCharacter::AddWeapon(TSubclassOf<UPTRWeapon> WeaponClass, bool bEquip)

@@ -7,7 +7,7 @@
 
 
 
-UCLASS(Abstract, ClassGroup=(PTR), Category="Petrichor|Items")
+UCLASS( ClassGroup=(PTR), Category="Petrichor|Items")
 class PETRICHOR_API UPTRItem : public UPrimaryDataAsset
 {
     GENERATED_BODY()
@@ -34,8 +34,6 @@ public:
         return FPrimaryAssetId(ItemType, InternalName);
     }
 
-protected:
-
     /** Name displayed to the user. */
     UPROPERTY(EditAnywhere, blueprintReadOnly, Category="Item|Display")
     FText DisplayName;
@@ -43,8 +41,5 @@ protected:
     /** Extra Info we can display to the user. */
     UPROPERTY(EditAnywhere, blueprintReadOnly, Category="Item|Display")
     FText Description;
-
-
-
 
 };
