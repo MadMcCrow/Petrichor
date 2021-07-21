@@ -6,3 +6,8 @@ UPTRAttributeItem::UPTRAttributeItem(const FObjectInitializer& ObjectInitializer
 {
 
 }
+
+FPrimaryAssetId UPTRAttributeItem::GetPrimaryAssetId() const
+{
+	return FPrimaryAssetId(StaticClass()->GetFName(),InternalName);
+}
