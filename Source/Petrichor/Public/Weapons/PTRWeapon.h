@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Petrichor.h"
+#include "Items/PTRItem.h"
 #include "PTRWeapon.generated.h"
 
 // forward declaration
@@ -12,7 +13,7 @@ class UPTRAmmunition;
  *	Base Class for weapons
  */
 UCLASS(ClassGroup=(PTR), Abstract, Category ="Weapon")
-class PETRICHOR_API UPTRWeapon : public UObject
+class PETRICHOR_API UPTRWeapon : public UPTRItem
 {
 	GENERATED_BODY()
 

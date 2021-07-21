@@ -27,12 +27,11 @@ public:
 	class APTRCharacter* GetPTRCharacter() const;
 
 	/**
-	 *	@fn GetPTRGameplayAbilitySystem
-	 *	Get Player's Ability system
-	 *	This will get the one referenced in the character.
-	 */
-	UFUNCTION(BlueprintPure, BlueprintCosmetic, Category="Petrichor", DisplayName="GetPetrichorGameplayAbilitySystem")
-	class UPTRAbilitySystemComponent* GetPTRGameplayAbilitySystem() const;
+	*	@fn GetPTRCharacter
+	*	Get Player's character
+	*/
+	UFUNCTION(BlueprintPure, BlueprintCosmetic, Category="Petrichor", DisplayName="GetPetrichorPlayerState")
+	class APTRPlayerState* GetPTRPlayerState() const;
 
 protected:
 

@@ -12,10 +12,10 @@ FPTRInventoryItem::FPTRInventoryItem(const FSoftObjectPath &Path, int32 Num): Su
 {
 	if (!Path.IsNull())
 	{
-		auto Item = TSoftObjectPtr<UPTRItem>(Path);
+		const auto Item = TSoftObjectPtr<UPTRItem>(Path);
 		if (!Item.IsNull())
 		{
-			UPTRInventoryComponent::GetAssetID(Item);
+			AssetId = UPTRInventoryComponent::GetAssetID(Item);
 		}
 	}
 }
@@ -30,7 +30,7 @@ UPTRInventoryComponent::UPTRInventoryComponent(const FObjectInitializer& ObjectI
 	Items.Empty();
 }
 
-bool UPTRInventoryComponent::AddItem(const TSoftObjectPtr<UPTRItem>& Item, int32 Count)
+bool UPTRInventoryComponent::AddItem(const FSoftObjectPath& Item, int32 Count)
 {
 	if (Item.IsNull() || Count <= 0)
 	{
@@ -47,7 +47,7 @@ bool UPTRInventoryComponent::AddItem(const TSoftObjectPtr<UPTRItem>& Item, int32
 	return false;
 }
 
-bool UPTRInventoryComponent::RemoveItem(const TSoftObjectPtr<UPTRItem>& Item, int32 Count)
+bool UPTRInventoryComponent::RemoveItem(const FSoftObjectPath& Item, int32 Count)
 {
 	if (Item.IsNull() || Count <= 0)
 	{
@@ -64,14 +64,14 @@ bool UPTRInventoryComponent::RemoveItem(const TSoftObjectPtr<UPTRItem>& Item, in
 }
 
 
-int32 UPTRInventoryComponent::ItemCount(const TSoftObjectPtr<UPTRItem>& Item) const
+int32 UPTRInventoryComponent::ItemCount(const FSoftObjectPath& Item) const
 {
 	if (Item.IsNull())
 	{
 		return 0;
 	}
 
-	const auto Key = FPTRInventoryItem(Item.ToSoftObjectPath(), -1);
+	const auto Key	= FPTRInventoryItem(Item, -1);
 	if (const auto FoundItem = Items.FindByHash(GetTypeHash(Key),Key))
 	{
 		return FoundItem->Count;
@@ -79,22 +79,23 @@ int32 UPTRInventoryComponent::ItemCount(const TSoftObjectPtr<UPTRItem>& Item) co
 	return 0;
 }
 
-bool UPTRInventoryComponent::HasItem(const TSoftObjectPtr<UPTRItem>& Item) const
+bool UPTRInventoryComponent::HasItem(const FSoftObjectPath& Item) const
 {
 	return ItemCount(Item) > 0;
 }
 
-TSoftObjectPtr<UPTRItem> UPTRInventoryComponent::GetAssetFromID(const FPrimaryAssetId& AssetID)
+FSoftObjectPath UPTRInventoryComponent::GetAssetFromID(const FPrimaryAssetId& AssetID)
 {
 	if (UAssetManager* Manager = UAssetManager::GetIfValid())
 	{
 		FPrimaryAssetTypeInfo Info;
+
 		if (Manager->GetPrimaryAssetTypeInfo(AssetID.PrimaryAssetType, Info) && !Info.bHasBlueprintClasses)
 		{
-			return TSoftObjectPtr<UPTRItem>(Manager->GetPrimaryAssetPath(AssetID));
+			return Manager->GetPrimaryAssetPath(AssetID);
 		}
 	}
-	return TSoftObjectPtr<UPTRItem>();
+	return FSoftObjectPath();
 }
 
 FPrimaryAssetId UPTRInventoryComponent::GetAssetID(const TSoftObjectPtr<UPTRItem>& Item)
@@ -103,18 +104,37 @@ FPrimaryAssetId UPTRInventoryComponent::GetAssetID(const TSoftObjectPtr<UPTRItem
 	{
 		return FPrimaryAssetId();
 	}
-	if (const UPTRItem* ItemPtr = Item.LoadSynchronous())
+	// no need to load
+	if (UAssetManager* Manager = UAssetManager::GetIfValid())
 	{
-		return ItemPtr->GetPrimaryAssetId();
-
+		return Manager->GetPrimaryAssetIdForPath(Item.ToSoftObjectPath());
 	}
 	return FPrimaryAssetId();
+}
+
+TSet<FPTRInventoryItem> UPTRInventoryComponent::GetItems() const
+{
+	return Items;
+}
+
+void UPTRInventoryComponent::InitInventory(TSet<FPTRInventoryItem>& InitItems)
+{
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		// update server's version
+		Items = InitItems;
+
+		for (auto ItemItr : InitItems)
+		{
+			Net_OnUpdateItem(ItemItr);
+		}
+	}
 }
 
 
 void UPTRInventoryComponent::Net_UpdateItem_Implementation(const FPTRInventoryItem& Item)
 {
-	if (ROLE_Authority)
+	if (GetOwnerRole() == ROLE_Authority)
 	{
 		// Make sure Item is valid :
 		 if (!Item.IsNull())
