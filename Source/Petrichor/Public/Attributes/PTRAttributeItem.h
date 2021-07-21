@@ -13,5 +13,7 @@ class UPTRAttributeItem : public UPTRItem
 public:
 	UPTRAttributeItem(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
+
 
 };

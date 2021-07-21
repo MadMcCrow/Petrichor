@@ -128,7 +128,7 @@ void UPTRAttributeSubsystem::ReferenceAllAttributes()
 	for (auto DefinitionItr : ConfigAttributes)
 	{
 		const UClass* AttributeClass = UPTRAttributeItem::StaticClass();
-		const auto NewAttribute = NewObject<UPTRAttributeItem>(this,AttributeClass,MakeUniqueObjectName(this, AttributeClass, AttributeClass->GetDefaultObjectName()));
+		auto NewAttribute = Cast<UPTRAttributeItem>(AttributeClass->GetDefaultObject());
 		if (NewAttribute)
 		{
 			NewAttribute->InternalName = DefinitionItr.InternalName;
@@ -142,11 +142,14 @@ void UPTRAttributeSubsystem::ReferenceAttributeItem(UPTRAttributeItem* Item)
 {
 	if (Item)
 	{
-		AssetData.AddBundleAsset("Attributes",Item);
 		if (UAssetManager* Manager = UAssetManager::GetIfValid())
 		{
-			if (Manager->AddDynamicAsset(Item->GetPrimaryAssetId(), FSoftObjectPath(Item), AssetData))
+			const auto ID = Item->GetPrimaryAssetId();
+			const auto Path = FSoftObjectPath(Item);
+			// Try to add to manager
+			if (Manager->AddDynamicAsset(ID,Path, AssetData))
 			{
+				AssetData.AddBundleAsset("Attributes",Item);
 				DynamicAttributes.Add(Item);
 			}
 		}

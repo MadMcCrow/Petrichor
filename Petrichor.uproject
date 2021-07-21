@@ -7,7 +7,7 @@
 		{
 			"Name": "Petrichor",
 			"Type": "Runtime",
-			"LoadingPhase": "Default",
+			"LoadingPhase": "PostDefault",
 			"AdditionalDependencies": [
 				"Engine",
 				"AIModule",
