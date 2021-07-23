@@ -1,6 +1,6 @@
 // Copyright © Noé Perard-Gayot 2021.
 
-#include "Attributes/PTRAttributeHealth.h"
+#include "PTRAttributeHealth.h"
 
 #define LOCTEXT_NAMESPACE "PTR"
 

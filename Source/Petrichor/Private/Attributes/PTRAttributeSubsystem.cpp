@@ -98,8 +98,6 @@ UPTRAttributeSubsystem* UPTRAttributeSubsystem::GetAttributeSubsystem()
 
 void UPTRAttributeSubsystem::ReferenceAllAttributes()
 {
-
-
 	// first all classes
 	for (TObjectIterator<UClass> ClassIt; ClassIt; ++ClassIt)
 	{
@@ -117,7 +115,7 @@ void UPTRAttributeSubsystem::ReferenceAllAttributes()
 			continue;
 		}
 
-		const auto NewAttribute = NewObject<UPTRAttributeItem>(this, Class,MakeUniqueObjectName(this, Class, Class->GetDefaultObjectName()));
+		const auto NewAttribute = Cast<UPTRAttributeItem>(Class->GetDefaultObject());
 		if (NewAttribute)
 		{
 			ReferenceAttributeItem(NewAttribute);
@@ -144,13 +142,16 @@ void UPTRAttributeSubsystem::ReferenceAttributeItem(UPTRAttributeItem* Item)
 	{
 		if (UAssetManager* Manager = UAssetManager::GetIfValid())
 		{
+
 			const auto ID = Item->GetPrimaryAssetId();
 			const auto Path = FSoftObjectPath(Item);
+
 			// Try to add to manager
 			if (Manager->AddDynamicAsset(ID,Path, AssetData))
 			{
 				AssetData.AddBundleAsset("Attributes",Item);
 				DynamicAttributes.Add(Item);
+				Manager->LoadPrimaryAsset(ID);
 			}
 		}
 	}

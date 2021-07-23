@@ -1,6 +1,6 @@
 // Copyright © Noé Perard-Gayot 2021.
 
-#include "Attributes/PTRAttributeArmor.h"
+#include "PTRAttributeArmor.h"
 
 #define LOCTEXT_NAMESPACE "PTR"
 

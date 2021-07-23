@@ -52,6 +52,7 @@ public:
 	 *	GetAttributeID
 	 *	@return The stored Primary Asset ID of the stored DynamicAttribute that correspond to this name or nullptr
 	 */
+	UFUNCTION(BlueprintPure, Category = "PTR|Attribute")
 	FPrimaryAssetId GetAttributeID(FName InternalName) const;
 
 	/**
@@ -64,6 +65,7 @@ public:
 	 *	GetAttribute
 	 *	@return The Asset Path of the DynamicAttribute that correspond to that correspond to this name or nullptr
 	 */
+	UFUNCTION(BlueprintPure, Category = "PTR|Attribute")
 	FSoftObjectPath GetAttribute(FName InternalName) const;
 
 	/**
