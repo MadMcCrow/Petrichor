@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "Engine/DataTable.h"
 
+#include "Items/PTRSoftItemPath.h"
 #include "PTRInventoryComponent.generated.h"
 
 // forward declaration
@@ -36,14 +37,12 @@ public:
 	 *	Parametric CTR
 	 *	will make sure there's a valid item with that path
 	 */
-	FPTRInventoryItem(const FSoftObjectPath& Path, int32 Num = 0);
+	FPTRInventoryItem(const FPTRSoftItemPath& Path, int32 Num = 0);
 
 	/**
 	*	Parametric CTR with Templated param
 	*/
-	FPTRInventoryItem(const TSoftObjectPtr<UPTRItem>& Path, int32 Num = 0) : FPTRInventoryItem(Path.ToSoftObjectPath(), Num)
-	{
-	}
+	FPTRInventoryItem(const TSoftObjectPtr<UPTRItem>& Path, int32 Num = 0);
 
 	// default CTR
 	FPTRInventoryItem(): AssetId(FPrimaryAssetId()), Count(0)
@@ -99,7 +98,7 @@ public:
 	 *  @return true if succeeded, false otherwise
 	 */
 	UFUNCTION(BlueprintCallable, Category="Inventory")
-	bool AddItem(UPARAM(meta=(AllowClasses="PTRItem")) const FSoftObjectPath& Item, int32 Count);
+	bool AddItem(UPARAM(meta=(AllowClasses="PTRItem")) const FPTRSoftItemPath& Item, int32 Count);
 
 	/**
 	 *  RemoveItem
@@ -107,7 +106,7 @@ public:
 	 *  @return true if succeeded, false otherwise
 	 */
 	UFUNCTION(BlueprintCallable, Category="Inventory")
-	bool RemoveItem(UPARAM(meta=(AllowClasses="PTRItem")) const FSoftObjectPath& Item, int32 Count);
+	bool RemoveItem(UPARAM(meta=(AllowClasses="PTRItem")) const FPTRSoftItemPath& Item, int32 Count);
 
 	/**
 	 *  ItemCount
@@ -115,7 +114,7 @@ public:
 	 *  @return The amount of the item stored, or 0 if not present
 	 */
 	UFUNCTION(BlueprintPure, Category="Inventory")
-	int32 ItemCount(UPARAM(meta=(AllowClasses="PTRItem")) const FSoftObjectPath& Item) const;
+	int32 ItemCount(UPARAM(meta=(AllowClasses="PTRItem")) const FPTRSoftItemPath& Item) const;
 
 	/**
 	 *  ItemCount
@@ -123,7 +122,7 @@ public:
 	 *  @return The amount of the item stored, or 0 if not present
 	 */
 	UFUNCTION(BlueprintPure, Category="Inventory")
-	bool HasItem(UPARAM(meta=(AllowClasses="PTRItem")) const FSoftObjectPath& Item) const;
+	bool HasItem(UPARAM(meta=(AllowClasses="PTRItem")) const FPTRSoftItemPath& Item) const;
 
 	/**
 	 * Simple getter that returns the path without loading the object.

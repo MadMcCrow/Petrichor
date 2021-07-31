@@ -6,7 +6,6 @@
 #include "PTRItem.generated.h"
 
 
-
 UCLASS( ClassGroup=(PTR), Category="Petrichor|Items")
 class PETRICHOR_API UPTRItem : public UPrimaryDataAsset
 {
@@ -16,23 +15,29 @@ public:
     // Default CTR
     UPTRItem(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+    // UPrimaryDataAsset API
+    virtual void PreSave(const ITargetPlatform* TargetPlatform) override;
+    // \UPrimaryDataAsset API
+
     /**
      *  Reference this in your asset manager
      */
-    UPROPERTY(EditAnywhere, blueprintReadOnly, Category="Item|System")
-    FPrimaryAssetType ItemType;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Item|System")
+    FPrimaryAssetType AssetType;
 
     /**
      *  The unique name for this item
      */
-    UPROPERTY(VisibleAnywhere, blueprintReadOnly, Category="Item|System")
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Item|System")
     FName InternalName;
 
     // uniqueID used for referencing this
     virtual FPrimaryAssetId GetPrimaryAssetId() const override
     {
-        return FPrimaryAssetId(ItemType, InternalName);
+        return FPrimaryAssetId(AssetType, InternalName);
     }
+
+protected:
 
     /** Name displayed to the user. */
     UPROPERTY(EditAnywhere, blueprintReadOnly, Category="Item|Display")
@@ -42,4 +47,7 @@ public:
     UPROPERTY(EditAnywhere, blueprintReadOnly, Category="Item|Display")
     FText Description;
 
+private:
+    /** Update AssetType and InternalName */
+    void UpdateItemInternal();
 };
