@@ -18,32 +18,32 @@ FSoftObjectPath FPTRSoftItemPath::ToSoftPath() const
 	return FSoftObjectPath(ItemPath);
 }
 
-UPTRItem* UPTRSoftItemPathLibrary::TryLoadSoftItemPath(const FPTRSoftItemPath& InPath) const
+UPTRItem* UPTRSoftItemPathLibrary::TryLoadSoftItemPath(const FPTRSoftItemPath& InPath)
 {
 	return InPath.TryLoad();
 }
 
-FString UPTRSoftItemPathLibrary::SoftItemPathToString(const FPTRSoftItemPath& InPath) const
+FString UPTRSoftItemPathLibrary::SoftItemPathToString(const FPTRSoftItemPath& InPath)
 {
 	return InPath.ToString();
 }
 
-TSoftObjectPtr<UPTRItem> UPTRSoftItemPathLibrary::SoftItemPathToSoftObject(const FPTRSoftItemPath& InPath) const
+TSoftObjectPtr<UPTRItem> UPTRSoftItemPathLibrary::SoftItemPathToSoftObject(const FPTRSoftItemPath& InPath)
 {
 	return InPath.ToSoftObject();
 }
 
-FSoftObjectPath UPTRSoftItemPathLibrary::SoftItemPathToSoftPath(const FPTRSoftItemPath& InPath) const
+FSoftObjectPath UPTRSoftItemPathLibrary::SoftItemPathToSoftPath(const FPTRSoftItemPath& InPath)
 {
 	return InPath.ToSoftPath();
 }
 
-FPTRSoftItemPath UPTRSoftItemPathLibrary::SoftItemPathFromSoftObject(const TSoftObjectPtr<UPTRItem>& InPath) const
+FPTRSoftItemPath UPTRSoftItemPathLibrary::SoftItemPathFromSoftObject(const TSoftObjectPtr<UPTRItem>& InPath)
 {
 	return FPTRSoftItemPath(InPath);
 }
 
-FPTRSoftItemPath UPTRSoftItemPathLibrary::SoftItemPathFromSoftPath(const FSoftObjectPath& InPath) const
+FPTRSoftItemPath UPTRSoftItemPathLibrary::SoftItemPathFromSoftPath(const FSoftObjectPath& InPath)
 {
 	return FPTRSoftItemPath(InPath);
 }

@@ -76,8 +76,10 @@ public:
 };
 
 
+
 /**
  *	Functions for using FPTRSoftItemPath in Blueprint
+ *	@see FPTRSoftItemPath
  */
 UCLASS( ClassGroup=(PTR), Category="Petrichor|Items")
 class PETRICHOR_API UPTRSoftItemPathLibrary : public UBlueprintFunctionLibrary
@@ -86,29 +88,54 @@ class PETRICHOR_API UPTRSoftItemPathLibrary : public UBlueprintFunctionLibrary
 
 public:
 
-	/** Try load soft Item path */
+	/**
+	 * Function to try to load an Item based on it's path
+	 * @param InPath The soft Item path
+	 * @return the loaded item or nullptr if failed
+	 */
 	UFUNCTION(BlueprintCallable, Category="SoftItemPath",  meta=(DisplayName = "Try Load"))
-	class UPTRItem* TryLoadSoftItemPath(const FPTRSoftItemPath& InPath) const;
+	static class UPTRItem* TryLoadSoftItemPath(const FPTRSoftItemPath& InPath);
 
-	/** convert to String */
-	UFUNCTION(BlueprintCallable, Category="SoftItemPath", meta=(DisplayName = "To String",  CompactNodeTitle = "->", BlueprintAutocast , Keywords = "String"))
-	FString SoftItemPathToString(const FPTRSoftItemPath& InPath) const;
+	/**
+	 * Function to auto-convert FPTRSoftItemPath to String
+	 * @param InPath The soft Item path
+	 * @return the string text
+	 */
+	UFUNCTION(BlueprintPure, Category="SoftItemPath", meta=(DisplayName = "To String",  CompactNodeTitle = "->", BlueprintAutocast , Keywords = "String"))
+	static FString SoftItemPathToString(const FPTRSoftItemPath& InPath);
 
-	/** convert to Soft Pointer/Reference */
-	UFUNCTION(BlueprintCallable, Category="SoftItemPath", meta=(DisplayName = "To Soft Object", CompactNodeTitle = "->", BlueprintAutocast , Keywords = "Soft Reference"))
-	TSoftObjectPtr<UPTRItem> SoftItemPathToSoftObject(const FPTRSoftItemPath& InPath) const;
+	/**
+	 * Function to auto-convert FPTRSoftItemPath to Soft Pointer/Reference
+	 * @param InPath The soft Item path
+	 * @return the Soft Pointer/Reference
+	 */
+	UFUNCTION(BlueprintPure, Category="SoftItemPath", meta=(DisplayName = "To Soft Object", CompactNodeTitle = "->", BlueprintAutocast , Keywords = "Soft Reference"))
+	static TSoftObjectPtr<UPTRItem> SoftItemPathToSoftObject(const FPTRSoftItemPath& InPath);
 
-	/** convert to Soft Path */
-	UFUNCTION(BlueprintCallable, Category="SoftItemPath", meta=(DisplayName = "To Soft Path", CompactNodeTitle = "->", BlueprintAutocast , Keywords = "Soft Path"))
-	FSoftObjectPath SoftItemPathToSoftPath(const FPTRSoftItemPath& InPath) const;
+	/**
+	 * Function to auto-convert FPTRSoftItemPath to Soft path
+	 * @param InPath The soft Item path
+	 * @return the softObject  Path
+	 */
+	UFUNCTION(BlueprintPure, Category="SoftItemPath", meta=(DisplayName = "To Soft Path", CompactNodeTitle = "->", BlueprintAutocast , Keywords = "Soft Path"))
+	static FSoftObjectPath SoftItemPathToSoftPath(const FPTRSoftItemPath& InPath);
 
-	/** convert from Soft Pointer/Reference */
-	UFUNCTION(BlueprintCallable, Category="SoftItemPath", meta=(DisplayName = "From Soft Object", CompactNodeTitle = "->", BlueprintAutocast , Keywords = "Soft Reference"))
-	FPTRSoftItemPath SoftItemPathFromSoftObject(const TSoftObjectPtr<UPTRItem>& InPtr) const;
 
-	/** convert from Soft Path */
-	UFUNCTION(BlueprintCallable, Category="SoftItemPath", meta=(DisplayName = "From Soft Path", CompactNodeTitle = "->", BlueprintAutocast , Keywords = "Soft Path"))
-	FPTRSoftItemPath SoftItemPathFromSoftPath(const FSoftObjectPath& InPath) const;
+	/**
+	 * Function to auto-convert FPTRSoftItemPath Soft Pointer/Reference
+	 * @param InPtr The soft Object ptr
+	 * @return the Item Path
+	 */
+	UFUNCTION(BlueprintPure, Category="SoftItemPath", meta=(DisplayName = "From Soft Object", CompactNodeTitle = "->", BlueprintAutocast , Keywords = "Soft Reference"))
+	static FPTRSoftItemPath SoftItemPathFromSoftObject(const TSoftObjectPtr<UPTRItem>& InPtr);
+
+	/**
+	 * Function to auto-convert FPTRSoftItemPath from Soft Path
+	 * @param InPath The soft path
+	 * @return the Item Path
+	 */
+	UFUNCTION(BlueprintPure, Category="SoftItemPath", meta=(DisplayName = "From Soft Path", CompactNodeTitle = "->", BlueprintAutocast , Keywords = "Soft Path"))
+	static FPTRSoftItemPath SoftItemPathFromSoftPath(const FSoftObjectPath& InPath);
 
 
 };
