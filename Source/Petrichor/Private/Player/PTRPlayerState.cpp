@@ -2,18 +2,14 @@
 
 
 #include "Player/PTRPlayerState.h"
-
 #include "Engine/AssetManager.h"
 #include "Items/PTRInventoryComponent.h"
-#include "Attributes/PTRAttributeComponent.h"
 
 FName APTRPlayerState::InventoryComponentName	= TEXT("InventoryComponent");
-FName APTRPlayerState::AttributeComponentName	= TEXT("AttributeComponent");
 
 APTRPlayerState::APTRPlayerState(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	PlayerInventory		= ObjectInitializer.CreateDefaultSubobject<UPTRInventoryComponent>(this, InventoryComponentName, true);
-	PlayerAttributes	= ObjectInitializer.CreateDefaultSubobject<UPTRAttributeComponent>(this, AttributeComponentName, true);
 }
 
 void APTRPlayerState::BeginPlay()

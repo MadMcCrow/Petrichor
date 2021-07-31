@@ -8,16 +8,21 @@
 
 DEFINE_LOG_CATEGORY(LogPTRInventory);
 
-FPTRInventoryItem::FPTRInventoryItem(const FSoftObjectPath &Path, int32 Num): Super(), Count(Num)
+FPTRInventoryItem::FPTRInventoryItem(const FPTRSoftItemPath &Path, int32 Num): Super(), Count(Num)
 {
 	if (!Path.IsNull())
 	{
-		const auto Item = TSoftObjectPtr<UPTRItem>(Path);
+		const TSoftObjectPtr<UPTRItem> Item = Path.ToSoftObject();
 		if (!Item.IsNull())
 		{
 			AssetId = UPTRInventoryComponent::GetAssetID(Item);
 		}
 	}
+}
+
+FPTRInventoryItem::FPTRInventoryItem(const TSoftObjectPtr<UPTRItem>& Path, int32 Num)
+: FPTRInventoryItem(Path.ToSoftObjectPath(), Num)
+{
 }
 
 bool FPTRInventoryItem::IsNull() const
@@ -30,7 +35,7 @@ UPTRInventoryComponent::UPTRInventoryComponent(const FObjectInitializer& ObjectI
 	Items.Empty();
 }
 
-bool UPTRInventoryComponent::AddItem(const FSoftObjectPath& Item, int32 Count)
+bool UPTRInventoryComponent::AddItem(const FPTRSoftItemPath& Item, int32 Count)
 {
 	if (Item.IsNull() || Count <= 0)
 	{
@@ -47,7 +52,7 @@ bool UPTRInventoryComponent::AddItem(const FSoftObjectPath& Item, int32 Count)
 	return false;
 }
 
-bool UPTRInventoryComponent::RemoveItem(const FSoftObjectPath& Item, int32 Count)
+bool UPTRInventoryComponent::RemoveItem(const FPTRSoftItemPath& Item, int32 Count)
 {
 	if (Item.IsNull() || Count <= 0)
 	{
@@ -64,7 +69,7 @@ bool UPTRInventoryComponent::RemoveItem(const FSoftObjectPath& Item, int32 Count
 }
 
 
-int32 UPTRInventoryComponent::ItemCount(const FSoftObjectPath& Item) const
+int32 UPTRInventoryComponent::ItemCount(const FPTRSoftItemPath& Item) const
 {
 	if (Item.IsNull())
 	{
@@ -79,7 +84,7 @@ int32 UPTRInventoryComponent::ItemCount(const FSoftObjectPath& Item) const
 	return 0;
 }
 
-bool UPTRInventoryComponent::HasItem(const FSoftObjectPath& Item) const
+bool UPTRInventoryComponent::HasItem(const FPTRSoftItemPath& Item) const
 {
 	return ItemCount(Item) > 0;
 }
