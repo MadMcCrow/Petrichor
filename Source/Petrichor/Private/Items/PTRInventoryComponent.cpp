@@ -12,10 +12,9 @@ FPTRInventoryItem::FPTRInventoryItem(const FPTRSoftItemPath &Path, int32 Num): S
 {
 	if (!Path.IsNull())
 	{
-		const TSoftObjectPtr<UPTRItem> Item = Path.ToSoftObject();
-		if (!Item.IsNull())
+		if (UAssetManager* Manager = UAssetManager::GetIfValid())
 		{
-			AssetId = UPTRInventoryComponent::GetAssetID(Item);
+			AssetId = Manager->GetPrimaryAssetIdForPath(Path);
 		}
 	}
 }
@@ -27,7 +26,7 @@ FPTRInventoryItem::FPTRInventoryItem(const TSoftObjectPtr<UPTRItem>& Path, int32
 
 bool FPTRInventoryItem::IsNull() const
 {
-	return UPTRInventoryComponent::GetAssetFromID(*this).IsNull();
+	return FPTRSoftItemPath(AssetId).IsNull();
 }
 
 UPTRInventoryComponent::UPTRInventoryComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -89,34 +88,6 @@ bool UPTRInventoryComponent::HasItem(const FPTRSoftItemPath& Item) const
 	return ItemCount(Item) > 0;
 }
 
-FSoftObjectPath UPTRInventoryComponent::GetAssetFromID(const FPrimaryAssetId& AssetID)
-{
-	if (UAssetManager* Manager = UAssetManager::GetIfValid())
-	{
-		FPrimaryAssetTypeInfo Info;
-
-		if (Manager->GetPrimaryAssetTypeInfo(AssetID.PrimaryAssetType, Info) && !Info.bHasBlueprintClasses)
-		{
-			return Manager->GetPrimaryAssetPath(AssetID);
-		}
-	}
-	return FSoftObjectPath();
-}
-
-FPrimaryAssetId UPTRInventoryComponent::GetAssetID(const TSoftObjectPtr<UPTRItem>& Item)
-{
-	if (Item.IsNull())
-	{
-		return FPrimaryAssetId();
-	}
-	// no need to load
-	if (UAssetManager* Manager = UAssetManager::GetIfValid())
-	{
-		return Manager->GetPrimaryAssetIdForPath(Item.ToSoftObjectPath());
-	}
-	return FPrimaryAssetId();
-}
-
 TSet<FPTRInventoryItem> UPTRInventoryComponent::GetItems() const
 {
 	return Items;
@@ -145,7 +116,7 @@ void UPTRInventoryComponent::Net_UpdateItem_Implementation(const FPTRInventoryIt
 		 if (!Item.IsNull())
 		 {
 		 	// check for change first
-		 	if (ItemCount(GetAssetFromID(Item)) != Item.Count)
+		 	if (ItemCount(FPTRSoftItemPath(Item.AssetId)) != Item.Count)
 		 	{
 #if !UE_BUILD_SHIPPING
 		 	UE_LOG(LogPTRInventory, Display, TEXT("adding %i %s in %s"), Item.Count, *Item.ToString(), *GetOwner()->GetName());

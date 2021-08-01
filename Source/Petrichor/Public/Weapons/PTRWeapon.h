@@ -12,7 +12,7 @@ class UPTRAmmunition;
 /**
  *	Base Class for weapons
  */
-UCLASS(ClassGroup=(PTR), Abstract, Category ="Weapon")
+UCLASS(ClassGroup=(PTR), Category ="Weapon")
 class PETRICHOR_API UPTRWeapon : public UPTRItem
 {
 	GENERATED_BODY()
@@ -75,9 +75,4 @@ protected:
 
 public:
 
-	/**
-	 *  Will get you a live object of that weapon.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Weapon", meta = (WorldContext = "Outer"))
-	static UPTRWeapon* GetWeaponObject(const UObject* Outer, TSubclassOf<UPTRWeapon> WeaponClass);
 };

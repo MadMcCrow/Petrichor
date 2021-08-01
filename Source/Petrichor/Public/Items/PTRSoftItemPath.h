@@ -33,6 +33,9 @@ struct PETRICHOR_API FPTRSoftItemPath
 	{
 	}
 
+	// parametric CTR for conversion
+	FPTRSoftItemPath(const FPrimaryAssetId& AssetID);
+
 private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowedClasses="PTRItem", AllowPrivateAccess="true"))
@@ -73,7 +76,36 @@ public:
 	// To String
 	FORCEINLINE operator FString() const	{return ToString();}
 
+	/** Serializer to simplify it's serialisation */
+	// Causes errors
+	bool Serialize(FArchive& Ar)
+	{
+		Ar << ItemPath;
+		return true;
+	}
+
+	/** Serializer to simplify it's serialisation */
+	bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess)
+	{
+		Ar << ItemPath;
+		return true;
+	}
+
 };
+
+
+ // register the serialiser for the Soft Item Path
+template<>
+struct TStructOpsTypeTraits<FPTRSoftItemPath> : public TStructOpsTypeTraitsBase2<FPTRSoftItemPath>
+{
+	enum
+	{
+		WithSerializer	= true, // causes errors
+		WithNetSerializer	= true,
+	};
+};
+
+
 
 
 
@@ -120,7 +152,6 @@ public:
 	UFUNCTION(BlueprintPure, Category="SoftItemPath", meta=(DisplayName = "To Soft Path", CompactNodeTitle = "->", BlueprintAutocast , Keywords = "Soft Path"))
 	static FSoftObjectPath SoftItemPathToSoftPath(const FPTRSoftItemPath& InPath);
 
-
 	/**
 	 * Function to auto-convert FPTRSoftItemPath Soft Pointer/Reference
 	 * @param InPtr The soft Object ptr
@@ -136,6 +167,24 @@ public:
 	 */
 	UFUNCTION(BlueprintPure, Category="SoftItemPath", meta=(DisplayName = "From Soft Path", CompactNodeTitle = "->", BlueprintAutocast , Keywords = "Soft Path"))
 	static FPTRSoftItemPath SoftItemPathFromSoftPath(const FSoftObjectPath& InPath);
+
+	/**
+	 * Function to auto-convert FPTRSoftItemPath to FPrimaryAssetId
+	 * @param InPath The item path
+	 * @return the primary asset ID
+	 */
+	UFUNCTION(BlueprintPure, Category="SoftItemPath", meta=( DisplayName = "To Primary Asset ID", CompactNodeTitle = "->", BlueprintAutocast , Keywords = "Soft Path"))
+	static FPrimaryAssetId SoftItemPathToAssetID(const FPTRSoftItemPath& InPath);
+
+	/**
+	* Function to auto-convert FPTRSoftItemPath from FPrimaryAssetId
+	* @param InID The AssetId
+	* @return the Item Path
+	*/
+	UFUNCTION(BlueprintPure, Category="SoftItemPath", meta=( DisplayName = "From Primary Asset ID", CompactNodeTitle = "->", BlueprintAutocast , Keywords = "Soft Path"))
+	static FPTRSoftItemPath SoftItemPathFromAssetID(const FPrimaryAssetId& InID);
+
+
 
 
 };

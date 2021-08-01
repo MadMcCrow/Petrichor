@@ -58,21 +58,20 @@ UPTRInventoryComponent* APTRCharacter::GetInventory() const
 	return nullptr;
 }
 
-UPTRWeaponComponent* APTRCharacter::AddWeapon(TSubclassOf<UPTRWeapon> WeaponClass, bool bEquip)
+UPTRWeaponComponent* APTRCharacter::AddWeapon(TSoftObjectPtr<UPTRWeapon> Weapon, bool bEquip)
 {
-	if (WeaponClass == nullptr)
+	if (Weapon.IsNull())
 	{
 		return nullptr;
 	}
 
-	const UPTRWeapon* Weapon = UPTRWeapon::GetWeaponObject(this, WeaponClass);
 	const FString NameStr = WeaponComponentBaseName.ToString() + FString::Printf(TEXT("%d"), Weapon->WantedIndex);
-	auto WeaponComp = NewObject<UPTRWeaponComponent>(this, WeaponComponentClass, MakeUniqueObjectName(this, WeaponClass,FName(*NameStr)));
+	auto WeaponComp = NewObject<UPTRWeaponComponent>(this, WeaponComponentClass, MakeUniqueObjectName(this, Weapon->GetClass(),FName(*NameStr)));
 
 	if (WeaponComp)
 	{
 		WeaponComp->SetWeaponMeshes(FirstPersonWeaponMeshComponent, ThirdPersonWeaponMeshComponent);
-		WeaponComp->SetWeapon(WeaponClass);
+		WeaponComp->SetWeapon(Weapon);
 		WeaponComp->RegisterComponent();
 		WeaponComp->SetIsReplicated(true);
 		// Todo : add safety for already present weapon at index :
@@ -83,11 +82,11 @@ UPTRWeaponComponent* APTRCharacter::AddWeapon(TSubclassOf<UPTRWeapon> WeaponClas
 	return nullptr;
 }
 
-void APTRCharacter::EquipWeapon(TSubclassOf<UPTRWeapon> WeaponClass)
+void APTRCharacter::EquipWeapon(TSoftObjectPtr<UPTRWeapon> Weapon)
 {
 	for (auto WeaponItr:Weapons)
 	{
-		if (WeaponItr.Value->GetWeaponClass() == WeaponClass)
+		if (WeaponItr.Value->GetWeapon() == Weapon)
 		{
 			EquipWeaponIndex(WeaponItr.Key);
 		}

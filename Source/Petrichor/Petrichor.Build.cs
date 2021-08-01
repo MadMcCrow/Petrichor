@@ -8,7 +8,7 @@ public class Petrichor : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine",});
+		PublicDependencyModuleNames.AddRange(new [] { "Core", "CoreUObject", "Engine",});
 
 		PrivateDependencyModuleNames.AddRange((new []{ "InputCore", "AIModule" }));
 

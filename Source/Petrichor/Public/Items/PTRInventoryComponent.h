@@ -25,11 +25,15 @@ struct FPTRInventoryItem : public FTableRowBase
 
 public:
 
-	/** Unique ID of that Item */
+	/**
+	 *	Unique ID of that Item
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowedClasses="PTRItem"))
 	FPrimaryAssetId AssetId;
 
-	/** Amount stored */
+	/**
+	 *	Amount stored
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 Count;
 
@@ -72,6 +76,8 @@ public:
 	// implicit conversion operator
 	operator FPrimaryAssetId() const {return AssetId;}
 
+	operator FPTRSoftItemPath() const {return AssetId;}
+
 	// To string export function
 	FString ToString() const {return AssetId.ToString();}
 
@@ -98,7 +104,7 @@ public:
 	 *  @return true if succeeded, false otherwise
 	 */
 	UFUNCTION(BlueprintCallable, Category="Inventory")
-	bool AddItem(UPARAM(meta=(AllowClasses="PTRItem")) const FPTRSoftItemPath& Item, int32 Count);
+	bool AddItem(const FPTRSoftItemPath& Item, int32 Count);
 
 	/**
 	 *  RemoveItem
@@ -106,7 +112,7 @@ public:
 	 *  @return true if succeeded, false otherwise
 	 */
 	UFUNCTION(BlueprintCallable, Category="Inventory")
-	bool RemoveItem(UPARAM(meta=(AllowClasses="PTRItem")) const FPTRSoftItemPath& Item, int32 Count);
+	bool RemoveItem( const FPTRSoftItemPath& Item, int32 Count);
 
 	/**
 	 *  ItemCount
@@ -114,7 +120,7 @@ public:
 	 *  @return The amount of the item stored, or 0 if not present
 	 */
 	UFUNCTION(BlueprintPure, Category="Inventory")
-	int32 ItemCount(UPARAM(meta=(AllowClasses="PTRItem")) const FPTRSoftItemPath& Item) const;
+	int32 ItemCount(const FPTRSoftItemPath& Item) const;
 
 	/**
 	 *  ItemCount
@@ -122,21 +128,7 @@ public:
 	 *  @return The amount of the item stored, or 0 if not present
 	 */
 	UFUNCTION(BlueprintPure, Category="Inventory")
-	bool HasItem(UPARAM(meta=(AllowClasses="PTRItem")) const FPTRSoftItemPath& Item) const;
-
-	/**
-	 * Simple getter that returns the path without loading the object.
-	 */
-	UFUNCTION(BlueprintPure, Category="ItemID")
-	static FSoftObjectPath GetAssetFromID(const FPrimaryAssetId& AssetID);
-
-	/**
-	* Simple getter that loads synchronously an item and gets it's correct info.
-	* @note Making this async would complexify much without real benefits
-	* (we would have to make all our server calls two passes)
-	*/
-	UFUNCTION(BlueprintPure, Category="ItemID")
-	static FPrimaryAssetId GetAssetID( const TSoftObjectPtr<UPTRItem>& Item);
+	bool HasItem(const FPTRSoftItemPath& Item) const;
 
 	/**
 	*  GetItems
@@ -151,6 +143,7 @@ public:
 	 * Init the inventory with a predetermined set
 	 * @note can only be called from server
 	 */
+	UFUNCTION()
 	void InitInventory(TSet<FPTRInventoryItem> &InitItems);
 
 
@@ -162,8 +155,8 @@ protected:
 	 */
 	UFUNCTION(Server, Reliable, WithValidation)
 	void Net_UpdateItem(const FPTRInventoryItem& Item);
-	void Net_UpdateItem_Implementation(const FPTRInventoryItem& Item);
-	bool Net_UpdateItem_Validate(const FPTRInventoryItem& Item) const;
+	virtual void Net_UpdateItem_Implementation(const FPTRInventoryItem& Item);
+	virtual bool Net_UpdateItem_Validate(const FPTRInventoryItem& Item) const;
 
 
 	/**
@@ -173,10 +166,11 @@ protected:
 	 */
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
 	void Net_OnUpdateItem(const FPTRInventoryItem& Item);
-	void Net_OnUpdateItem_Implementation(const FPTRInventoryItem& Item);
-	bool Net_OnUpdateItem_Validate(const FPTRInventoryItem& Item) const;
+	virtual void Net_OnUpdateItem_Implementation(const FPTRInventoryItem& Item);
+	virtual bool Net_OnUpdateItem_Validate(const FPTRInventoryItem& Item) const;
 
 private:
+
 	/**
 	 *  The items this inventory has
 	 *  FPTRInventoryItem provide a hash function to ensure that there's no double
