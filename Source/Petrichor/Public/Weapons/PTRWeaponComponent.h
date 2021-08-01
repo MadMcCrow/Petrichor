@@ -54,6 +54,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void FireSecondary();
 
+	UFUNCTION(BlueprintCallable, Category= "Weapon")
+	class UPTRWeapon* GetWeapon();
+
 
 	UFUNCTION(BlueprintPure, Category = "Weapon")
 	EPTRWeaponStance GetCurrentWeaponStance() const {return WeaponStance;}
@@ -65,7 +68,7 @@ public:
 	void SetWeaponMeshes(USkeletalMeshComponent* FPSWeapon, USkeletalMeshComponent* TPSWeapon);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void SetWeapon(TSubclassOf<UPTRWeapon> NewWeaponClass);
+	void SetWeapon(TSoftObjectPtr<UPTRWeapon> NewWeapon);
 
 protected:
 
@@ -83,24 +86,20 @@ protected:
 
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void Net_SetWeapon(TSubclassOf<UPTRWeapon> NewWeaponClass);
-	void Net_SetWeapon_Implementation(TSubclassOf<UPTRWeapon> NewWeaponClass);
-	bool Net_SetWeapon_Validate(TSubclassOf<UPTRWeapon> NewWeaponClass)	{return true;}
+	void Net_SetWeapon(const TSoftObjectPtr<UPTRWeapon>& NewWeapon);
+	void Net_SetWeapon_Implementation(const TSoftObjectPtr<UPTRWeapon>& NewWeapon);
+	bool Net_SetWeapon_Validate(const TSoftObjectPtr<UPTRWeapon>& NewWeapon)	{return true;}
 
 	UFUNCTION()
-	void OnRep_WeaponClass();
+	void OnRep_Weapon();
 
 private:
 
 	UPROPERTY(Transient, DuplicateTransient, Replicated)
 	EPTRWeaponStance WeaponStance;
 
-	UPROPERTY(Transient, DuplicateTransient, ReplicatedUsing = OnRep_WeaponClass)
-	TSubclassOf<UPTRWeapon> WeaponClass;
-
-	/** For now we use CDO as weapon to use */
-	UPROPERTY(Transient)
-	class UPTRWeapon* WeaponCDO;
+	UPROPERTY(Transient, DuplicateTransient, ReplicatedUsing = OnRep_Weapon)
+	TSoftObjectPtr<UPTRWeapon> WeaponItem;
 
 	/** Only makes sens for owner */
 	UPROPERTY(Transient, DuplicateTransient)
@@ -114,6 +113,6 @@ private:
 public:
 
 	FORCEINLINE TMap<EPTRCharacterViewType, USkeletalMeshComponent*> GetWeaponMeshes() const {return {{EPTRCharacterViewType::FirstPerson, FirstPersonWeapon}, {EPTRCharacterViewType::ThirdPerson,ThirdPersonWeapon}};}
-	FORCEINLINE UPTRWeapon* GetWeapon() const {return UPTRWeapon::GetWeaponObject(this, WeaponClass);}
-	FORCEINLINE TSubclassOf<UPTRWeapon> GetWeaponClass() const {return WeaponClass;}
+
+	FORCEINLINE FSoftObjectPath GetWeapon() const {return WeaponItem.ToSoftObjectPath();}
 };

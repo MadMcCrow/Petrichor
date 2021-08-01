@@ -15,12 +15,30 @@ void FPTRSoftItemPathCustomization::CustomizeHeader(TSharedRef<IPropertyHandle> 
 {
 	StructPropertyHandle = InStructPropertyHandle;
 	PathPropertyHandle   = StructPropertyHandle->GetChildHandle("ItemPath");
-
 	UClass* MetaClass = FEditorClassUtils::GetClassFromString("PTRItem");
-	if (ClassSelector.Get() == nullptr)
+	FString StringValue;
+	PathPropertyHandle->GetValueAsFormattedString(StringValue,EPropertyPortFlags::PPF_ExportCpp );
+	if (StringValue != FString())
 	{
-		ClassSelector = MetaClass;
+		FAssetData StoredAsset;
+		if (PathPropertyHandle->GetValue(StoredAsset) == FPropertyAccess::Success)
+		{
+			if (StoredAsset.GetClass())
+			{
+				MetaClass = StoredAsset.GetClass();
+				ClassSelector = MetaClass;
+			}
+		}
 	}
+	else
+	{
+		MetaClass = FEditorClassUtils::GetClassFromString("PTRItem");
+		if (ClassSelector.Get() == nullptr)
+		{
+			ClassSelector = MetaClass;
+		}
+	}
+
 	// Set widget :
 	HeaderRow
 		.NameContent()

@@ -37,6 +37,11 @@ void UPTRWeaponComponent::FireSecondary()
 
 }
 
+UPTRWeapon* UPTRWeaponComponent::GetWeapon()
+{
+	return WeaponItem.LoadSynchronous();
+}
+
 
 bool UPTRWeaponComponent::IsWeaponDrawn()
 {
@@ -69,12 +74,12 @@ void UPTRWeaponComponent::SetWeaponMeshes(USkeletalMeshComponent* FPSWeapon, USk
 	}
 }
 
-void UPTRWeaponComponent::SetWeapon(TSubclassOf<UPTRWeapon> NewWeaponClass)
+void UPTRWeaponComponent::SetWeapon(TSoftObjectPtr<UPTRWeapon> NewWeapon)
 {
 	// make it network ready
 	if (GetOwnerRole() == ROLE_Authority)
 	{
-		Net_SetWeapon(NewWeaponClass);
+		Net_SetWeapon(NewWeapon);
 	}
 }
 
@@ -112,23 +117,22 @@ void UPTRWeaponComponent::Net_UpdateWeaponStance_Implementation(EPTRWeaponStance
 	}
 }
 
-void UPTRWeaponComponent::Net_SetWeapon_Implementation(TSubclassOf<UPTRWeapon> NewWeaponClass)
+void UPTRWeaponComponent::Net_SetWeapon_Implementation(const TSoftObjectPtr<UPTRWeapon>& NewWeapon)
 {
 	if (GetOwnerRole() == ROLE_Authority)
 	{
 		// todo : implement more safety ?
-		WeaponClass = NewWeaponClass;
+		WeaponItem = NewWeapon;
 	}
 }
 
-void UPTRWeaponComponent::OnRep_WeaponClass()
+void UPTRWeaponComponent::OnRep_Weapon()
 {
-	WeaponCDO = WeaponClass.GetDefaultObject();
 }
 
 void UPTRWeaponComponent::GetLifetimeReplicatedProps( TArray< FLifetimeProperty > & OutLifetimeProps ) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME( UPTRWeaponComponent, WeaponStance );
-	DOREPLIFETIME( UPTRWeaponComponent, WeaponClass );
+	DOREPLIFETIME( UPTRWeaponComponent, WeaponItem );
 }

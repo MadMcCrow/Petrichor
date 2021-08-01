@@ -1,7 +1,17 @@
 // Copyright © Noé Perard-Gayot 2021.
 
 #include "Items/PTRSoftItemPath.h"
+#include "Engine/AssetManager.h"
+#include "Engine/AssetManagerTypes.h"
 #include "Items/PTRItem.h"
+
+FPTRSoftItemPath::FPTRSoftItemPath(const FPrimaryAssetId& AssetID)
+{
+	if (UAssetManager* Manager = UAssetManager::GetIfValid())
+	{
+		ItemPath = Manager->GetPrimaryAssetPath(AssetID);
+	}
+}
 
 UPTRItem* FPTRSoftItemPath::TryLoad() const
 {
@@ -46,4 +56,22 @@ FPTRSoftItemPath UPTRSoftItemPathLibrary::SoftItemPathFromSoftObject(const TSoft
 FPTRSoftItemPath UPTRSoftItemPathLibrary::SoftItemPathFromSoftPath(const FSoftObjectPath& InPath)
 {
 	return FPTRSoftItemPath(InPath);
+}
+
+FPrimaryAssetId UPTRSoftItemPathLibrary::SoftItemPathToAssetID(const FPTRSoftItemPath& InPath)
+{
+	if (UAssetManager* Manager = UAssetManager::GetIfValid())
+	{
+		return Manager->GetPrimaryAssetIdForPath(InPath.ToSoftPath());
+	}
+	return FPrimaryAssetId();
+}
+
+FPTRSoftItemPath UPTRSoftItemPathLibrary::SoftItemPathFromAssetID(const FPrimaryAssetId& InID)
+{
+	if (UAssetManager* Manager = UAssetManager::GetIfValid())
+	{
+		return FPTRSoftItemPath(Manager->GetPrimaryAssetPath(InID));
+	}
+	return FPTRSoftItemPath();
 }

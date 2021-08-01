@@ -42,14 +42,14 @@ public:
 	 *	@todo: Make this networked
 	 */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-	virtual UPTRWeaponComponent* AddWeapon(TSubclassOf<UPTRWeapon> WeaponClass, bool bEquip = true);
+	virtual UPTRWeaponComponent* AddWeapon(TSoftObjectPtr<UPTRWeapon> Weapon, bool bEquip = true);
 
 	/**
 	*	Equip a weapon making it the one currently used
 	*	@param WeaponClass	The weapon to use for this one
 	*/
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-	virtual void EquipWeapon(TSubclassOf<UPTRWeapon> WeaponClass);
+	virtual void EquipWeapon(TSoftObjectPtr<UPTRWeapon> Weapon);
 
 	/**
 	*	Equip a weapon making it the one currently used - by index in the array

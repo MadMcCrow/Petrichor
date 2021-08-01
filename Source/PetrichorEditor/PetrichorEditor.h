@@ -13,5 +13,4 @@ class PETRICHOREDITOR_API FPTREditorModule : public IModuleInterface
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
-	private:
 };
