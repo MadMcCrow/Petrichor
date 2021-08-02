@@ -17,6 +17,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogPTRInventory, Log, All);
 
 /**
  *	Advanced struct for holding items counts
+ *	@todo : Add custom serialisation (Net), equality , etc ...
  */
 USTRUCT(BlueprintType, Category="Petrichor|Items")
 struct FPTRInventoryItem : public FTableRowBase
@@ -65,12 +66,7 @@ public:
 	{
 		const uint32 A = GetTypeHash(*this);
 		const uint32 B = GetTypeHash(Other);
-		// ignore negative counts
-		if (this->Count < 0 || Other.Count < 0)
-		{
-			return A == B;
-		}
-		return A == B && Count == Other.Count;
+		return A == B;
 	}
 
 	// implicit conversion operator
@@ -80,6 +76,8 @@ public:
 
 	// To string export function
 	FString ToString() const {return AssetId.ToString();}
+
+	int32 GetCount() const {return Count;}
 
 	bool IsNull() const;
 };
