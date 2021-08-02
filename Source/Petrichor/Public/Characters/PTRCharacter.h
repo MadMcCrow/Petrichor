@@ -3,11 +3,14 @@
 #pragma once
 
 #include "PTRCharacterBase.h"
+#include "Items/PTRInventoryComponent.h"
+
 #include "PTRCharacter.generated.h"
 
 
 class UPTRWeaponComponent;
 class UPTRWeapon;
+class USkeletalMeshComponent;
 
 
 UCLASS(Abstract, Blueprintable, config=Game)
@@ -18,17 +21,98 @@ public:
 
 	APTRCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	void AddWeapon(TSubclassOf<UPTRWeapon> Weapon);
+	// APawn API
+	virtual void OnConstruction(const FTransform& Transform) override;
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void OnRep_PlayerState() override;
+	// \APawn API
+
+
+	/**
+	*	@return Currenlty equiped weapon or nullptr if nothing found
+	*/
+	UFUNCTION(BlueprintPure, Category="Weapon")
+	UPTRInventoryComponent* GetInventory() const;
+
+
+	/**
+	 *	Add a weapon to our character
+	 *	@param WeaponClass	The weapon to use for this one
+	 *	@param bEquip		Wether we shall call EquipWeapon right after adding it
+	 *	@todo: Make this networked
+	 */
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	virtual UPTRWeaponComponent* AddWeapon(TSoftObjectPtr<UPTRWeapon> Weapon, bool bEquip = true);
+
+	/**
+	*	Equip a weapon making it the one currently used
+	*	@param WeaponClass	The weapon to use for this one
+	*/
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	virtual void EquipWeapon(TSoftObjectPtr<UPTRWeapon> Weapon);
+
+	/**
+	*	Equip a weapon making it the one currently used - by index in the array
+	*	@param Weapon	The weapon to use for this one
+	*/
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	virtual void EquipWeaponIndex(int32 Weapon);
+
+	/**
+	*	@return Currenlty equiped weapon or nullptr if nothing found
+	*/
+	UFUNCTION(BlueprintPure, Category="Weapon")
+	UPTRWeaponComponent* GetEquipedWeapon() const;
+
+
+
+
+protected:
+
+	/**
+	 *	Name of the socket for Weapon mesh both on First and third person meshes
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	FName WeaponSocketName;
+
+	/**
+	*	Class of WeaponComponent to spawn
+	*	default to UPTRWeaponComponent::StaticClass()
+	*/
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	TSubclassOf<UPTRWeaponComponent> WeaponComponentClass;
 
 private:
 
-	/** First person camera */
+	/**
+	 *	Weapon component will handle firing etc...
+	 *	There's one per weapon we have on us
+	 */
+	UPROPERTY(Transient, VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	TMap<int32,UPTRWeaponComponent*> Weapons;
+
+	/**
+	 *	Index of currently active WeaponComponent
+	 */
+	UPROPERTY(Transient,Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	int32 ActiveWeaponIndex;
+
+	/**
+	 *	Weapon Mesh for 1st person view
+	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
-	UPTRWeaponComponent* WeaponComponent;
+	USkeletalMeshComponent* FirstPersonWeaponMeshComponent;
+
+	/**
+	*	Weapon Mesh for 3rd person view
+	*/
+	UPROPERTY(Transient, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	USkeletalMeshComponent* ThirdPersonWeaponMeshComponent;
 
 public:
 
-	static FName WeaponComponentName;
-	FORCEINLINE UPTRWeaponComponent* GetWeaponComponent() const {return WeaponComponent; }
+	static FName WeaponComponentBaseName;
+	static FName FirstPersonWeaponMeshName;
+	static FName ThirdPersonWeaponMeshName;
 
 };

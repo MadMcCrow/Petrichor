@@ -17,11 +17,6 @@ void UPTRWeaponComponent::InitializeComponent()
 	SetIsReplicated(true);
 }
 
-UPTRWeapon* UPTRWeaponComponent::GetWeapon() const
-{
-	return WeaponClass.GetDefaultObject();
-}
-
 void UPTRWeaponComponent::HolsterWeapon()
 {
 
@@ -42,12 +37,50 @@ void UPTRWeaponComponent::FireSecondary()
 
 }
 
+UPTRWeapon* UPTRWeaponComponent::GetWeapon()
+{
+	return WeaponItem.LoadSynchronous();
+}
+
 
 bool UPTRWeaponComponent::IsWeaponDrawn()
 {
 	return	WeaponStance == EPTRWeaponStance::Idle		||
 			WeaponStance == EPTRWeaponStance::Primary	||
 			WeaponStance == EPTRWeaponStance::Secondary;
+}
+
+void UPTRWeaponComponent::SetWeaponMeshes(USkeletalMeshComponent* FPSWeapon, USkeletalMeshComponent* TPSWeapon)
+{
+	FirstPersonWeapon = FPSWeapon;
+	if (FirstPersonWeapon)
+	{
+		USkeletalMesh* WeaponMesh = GetWeapon()->WeaponMesh.Get();
+		if (WeaponMesh)
+		{
+			FirstPersonWeapon->SetSkeletalMesh(WeaponMesh, true);
+		}
+
+	}
+
+	ThirdPersonWeapon = TPSWeapon;
+	if (ThirdPersonWeapon)
+	{
+		USkeletalMesh* WeaponMesh = GetWeapon()->WeaponMesh.Get();
+		if (WeaponMesh)
+		{
+			ThirdPersonWeapon->SetSkeletalMesh(WeaponMesh, true);
+		}
+	}
+}
+
+void UPTRWeaponComponent::SetWeapon(TSoftObjectPtr<UPTRWeapon> NewWeapon)
+{
+	// make it network ready
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		Net_SetWeapon(NewWeapon);
+	}
 }
 
 void UPTRWeaponComponent::OnFire(EPTRFireMode FireMode)
@@ -84,23 +117,22 @@ void UPTRWeaponComponent::Net_UpdateWeaponStance_Implementation(EPTRWeaponStance
 	}
 }
 
-void UPTRWeaponComponent::Net_SetWeapon_Implementation(TSubclassOf<UPTRWeapon> NewWeaponClass)
+void UPTRWeaponComponent::Net_SetWeapon_Implementation(const TSoftObjectPtr<UPTRWeapon>& NewWeapon)
 {
 	if (GetOwnerRole() == ROLE_Authority)
 	{
 		// todo : implement more safety ?
-		WeaponClass = NewWeaponClass;
+		WeaponItem = NewWeapon;
 	}
 }
 
-void UPTRWeaponComponent::OnRep_WeaponClass()
+void UPTRWeaponComponent::OnRep_Weapon()
 {
-	WeaponCDO = WeaponClass.GetDefaultObject();
 }
 
 void UPTRWeaponComponent::GetLifetimeReplicatedProps( TArray< FLifetimeProperty > & OutLifetimeProps ) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME( UPTRWeaponComponent, WeaponStance );
-	DOREPLIFETIME( UPTRWeaponComponent, WeaponClass );
+	DOREPLIFETIME( UPTRWeaponComponent, WeaponItem );
 }

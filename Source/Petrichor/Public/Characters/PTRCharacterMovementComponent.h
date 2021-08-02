@@ -9,7 +9,7 @@
 /**
  *
  */
-UCLASS()
+UCLASS(ClassGroup=(PTR))
 class PETRICHOR_API UPTRCharacterMovementComponent : public UCharacterMovementComponent
 {
 	GENERATED_BODY()

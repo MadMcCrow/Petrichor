@@ -1,6 +1,11 @@
-# Visual Studio 2015 user specific files
+# Visual Studio user specific files
 .vs/
+
+# Visual Studio code user specific files
 .vscode/
+
+# Resharper / Ride user specific files
+.idea/
 
 # Compiled Object files
 *.slo
@@ -41,6 +46,7 @@
 *.sdf
 *.VC.db
 *.VC.opendb
+*.code-workspace
 
 # Precompiled Assets
 SourceArt/**/*.png
@@ -73,3 +79,8 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# Extra ignore
+*/developer/*
+.ignore
+

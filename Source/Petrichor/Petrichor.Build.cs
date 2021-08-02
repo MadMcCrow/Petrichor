@@ -8,8 +8,21 @@ public class Petrichor : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine",});
+		PublicDependencyModuleNames.AddRange(new [] { "Core", "CoreUObject", "Engine",});
 
-		PrivateDependencyModuleNames.AddRange((new []{ "InputCore", "GameplayTags", "HeadMountedDisplay" }));
+		PrivateDependencyModuleNames.AddRange((new []{ "InputCore", "AIModule" }));
+
+		// We do not need GAS , mouaaaahahaha
+		// PrivateDependencyModuleNames.AddRange((new []{ "GameplayAbilities", "GameplayTags", "GameplayTasks" }));
+
+		// Movie player for cinematics, Loading screens, etc...
+		PrivateDependencyModuleNames.AddRange((new []{ "MoviePlayer"}));
+
+		// Add support for networking
+		PrivateDependencyModuleNames.Add("OnlineSubsystem");
+		// To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
+
+		// VR Support
+		PrivateDependencyModuleNames.AddRange((new []{ "HeadMountedDisplay" }));
 	}
 }

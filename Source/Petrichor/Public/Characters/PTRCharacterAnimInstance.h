@@ -2,25 +2,19 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "Petrichor.h"
 #include "Animation/AnimInstance.h"
-#include "Weapons/PTRWeaponTypes.h"
+#include "Weapons/PTRWeaponComponent.h"
 
 #include "PTRCharacterAnimInstance.generated.h"
 
-/** What type of animation Instance is it ? */
-UENUM(BlueprintType)
-enum class EPTRCharacterAnimInstanceType : uint8
-{
-	FirstPerson		UMETA(DisplayName="FirstPerson Arms"),
-	ThirdPerson		UMETA(DisplayName="Whole Body Animations")
-};
+
 
 
 /**
  *
  */
-UCLASS()
+UCLASS(ClassGroup=(PTR))
 class PETRICHOR_API UPTRCharacterAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
@@ -34,7 +28,7 @@ public:
 protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
-	EPTRCharacterAnimInstanceType CharacterType;
+	EPTRCharacterViewType CharacterType;
 
 public:
 

@@ -6,7 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "PTRProjectile.generated.h"
 
-UCLASS(config=Game)
+UCLASS(ClassGroup=(PTR), config=Game)
 class APTRProjectile : public AActor
 {
 	GENERATED_BODY()
@@ -31,4 +31,3 @@ public:
 	/** Returns ProjectileMovement subobject **/
 	FORCEINLINE class UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovement; }
 };
-

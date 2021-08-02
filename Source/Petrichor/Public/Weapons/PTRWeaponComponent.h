@@ -2,17 +2,20 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "Components/SkeletalMeshComponent.h"
+
+#include "Components/ActorComponent.h"
+
+#include "Petrichor.h"
 #include "PTRWeapon.h"
-#include "PTRWeaponTypes.h"
 #include "PTRWeaponComponent.generated.h"
 
 
 
+class USkeletalMeshComponent;
+
 
 UCLASS( ClassGroup=(PTR), Within="PTRCharacter" )
-class PETRICHOR_API UPTRWeaponComponent : public USkeletalMeshComponent
+class PETRICHOR_API UPTRWeaponComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
@@ -22,7 +25,6 @@ public:
 
 	virtual void InitializeComponent() override;
 
-	UPTRWeapon* GetWeapon() const;
 
 	/**
 	 *	@fn HolsterWeapon
@@ -52,6 +54,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void FireSecondary();
 
+	UFUNCTION(BlueprintCallable, Category= "Weapon")
+	class UPTRWeapon* GetWeapon();
+
 
 	UFUNCTION(BlueprintPure, Category = "Weapon")
 	EPTRWeaponStance GetCurrentWeaponStance() const {return WeaponStance;}
@@ -59,8 +64,13 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Weapon")
 	bool IsWeaponDrawn();
 
-protected:
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void SetWeaponMeshes(USkeletalMeshComponent* FPSWeapon, USkeletalMeshComponent* TPSWeapon);
 
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void SetWeapon(TSoftObjectPtr<UPTRWeapon> NewWeapon);
+
+protected:
 
 	virtual void OnFire(EPTRFireMode FireMode);
 
@@ -76,21 +86,33 @@ protected:
 
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void Net_SetWeapon(TSubclassOf<UPTRWeapon> NewWeaponClass);
-	void Net_SetWeapon_Implementation(TSubclassOf<UPTRWeapon> NewWeaponClass);
-	bool Net_SetWeapon_Validate(TSubclassOf<UPTRWeapon> NewWeaponClass)	{return true;}
+	void Net_SetWeapon(const TSoftObjectPtr<UPTRWeapon>& NewWeapon);
+	void Net_SetWeapon_Implementation(const TSoftObjectPtr<UPTRWeapon>& NewWeapon);
+	bool Net_SetWeapon_Validate(const TSoftObjectPtr<UPTRWeapon>& NewWeapon)	{return true;}
 
 	UFUNCTION()
-	void OnRep_WeaponClass();
+	void OnRep_Weapon();
 
 private:
 
 	UPROPERTY(Transient, DuplicateTransient, Replicated)
 	EPTRWeaponStance WeaponStance;
 
-	UPROPERTY(Transient, DuplicateTransient, ReplicatedUsing = OnRep_WeaponClass)
-	TSubclassOf<UPTRWeapon> WeaponClass;
+	UPROPERTY(Transient, DuplicateTransient, ReplicatedUsing = OnRep_Weapon)
+	TSoftObjectPtr<UPTRWeapon> WeaponItem;
 
-	UPROPERTY(Transient)
-	class UPTRWeapon* WeaponCDO;
+	/** Only makes sens for owner */
+	UPROPERTY(Transient, DuplicateTransient)
+	USkeletalMeshComponent* FirstPersonWeapon;
+
+	/** Only makes sens for TPS view */
+	UPROPERTY(Transient, DuplicateTransient)
+	USkeletalMeshComponent* ThirdPersonWeapon;
+
+
+public:
+
+	FORCEINLINE TMap<EPTRCharacterViewType, USkeletalMeshComponent*> GetWeaponMeshes() const {return {{EPTRCharacterViewType::FirstPerson, FirstPersonWeapon}, {EPTRCharacterViewType::ThirdPerson,ThirdPersonWeapon}};}
+
+	FORCEINLINE FSoftObjectPath GetWeapon() const {return WeaponItem.ToSoftObjectPath();}
 };
