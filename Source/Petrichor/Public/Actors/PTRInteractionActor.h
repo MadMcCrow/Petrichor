@@ -23,7 +23,7 @@ protected:
     virtual void StartInteraction(AActor * Target);
 
 
-    /** */
+    /** Game Event triggered on Interaction */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced)
     class UPTRGameEvent* InteractionGameEvent;
 

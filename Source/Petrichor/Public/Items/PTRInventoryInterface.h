@@ -3,21 +3,21 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PTRAttributeInterface.generated.h"
+#include "PTRInventoryInterface.generated.h"
 
 // forward declaration
 class UPTRInventoryComponent;
 
 /**
- *	Simple Interface to easily add attributes to a Character or PlayerState
+ *	Simple Interface to easily get inventory on a class
  */
 UINTERFACE(MinimalAPI, Blueprintable, Category="Petrichor|Attributes")
-class UPTRAttributeInterface : public UInterface
+class UPTRInventoryInterface : public UInterface
 {
 	GENERATED_BODY()
 };
 
-class IPTRAttributeInterface
+class IPTRInventoryInterface
 {
 	GENERATED_BODY()
 

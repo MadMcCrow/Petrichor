@@ -1,8 +1,7 @@
 // Copyright © Noé Perard-Gayot 2021.
 
-
 #include "Attributes/PTRAttributeComponent.h"
-#include "Attributes/PTRAttributeInterface.h"
+#include "Items/PTRInventoryInterface.h"
 
 UPTRAttributeComponent::UPTRAttributeComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -40,5 +39,5 @@ int32 UPTRAttributeComponent::GetAttributeCount(const FPTRSoftItemPath& InItem) 
 
 UPTRInventoryComponent* UPTRAttributeComponent::GetInventoryComponent() const
 {
-	return IPTRAttributeInterface::Execute_GetInventoryComponent(GetOwner());
+	return IPTRInventoryInterface::Execute_GetInventoryComponent(GetOwner());
 }

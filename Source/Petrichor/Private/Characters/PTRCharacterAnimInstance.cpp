@@ -61,17 +61,17 @@ void UPTRCharacterAnimInstance::LoadWeaponAnimations()
 {
 	if (OwningCharacter)
 	{
-		if (UPTRWeaponComponent* WeaponComp = OwningCharacter->GetEquipedWeapon())
+		if (UPTRWeaponComponent* WeaponComp = OwningCharacter->GetWeaponComponent())
 		{
 			if(auto Weapon =  WeaponComp->GetWeapon())
 			{
 				switch (CharacterType)
 				{
 				case EPTRCharacterViewType::FirstPerson:
-					WeaponSequenceAssets = Weapon->WeaponAnimations;
+					WeaponSequenceAssets = Weapon->GetFirstPersonCharacterAnimations();
 					break;
 				case EPTRCharacterViewType::ThirdPerson:
-					WeaponSequenceAssets = Weapon->CharacterAnimations;
+					WeaponSequenceAssets = Weapon->GetThirdPersonCharacterAnimations();
 					break;
 				}
 

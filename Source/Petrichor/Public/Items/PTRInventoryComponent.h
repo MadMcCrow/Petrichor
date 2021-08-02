@@ -12,8 +12,9 @@
 // forward declaration
 class UPTRItem;
 
-
+// log for inventory
 DECLARE_LOG_CATEGORY_EXTERN(LogPTRInventory, Log, All);
+
 
 /**
  *	Advanced struct for holding items counts
@@ -72,15 +73,34 @@ public:
 	// implicit conversion operator
 	operator FPrimaryAssetId() const {return AssetId;}
 
-	operator FPTRSoftItemPath() const {return AssetId;}
+	operator FPTRSoftItemPath() const {return FPTRSoftItemPath(AssetId);}
 
 	// To string export function
 	FString ToString() const {return AssetId.ToString();}
 
+	FSoftObjectPath ToSoftPath() const;
+
 	int32 GetCount() const {return Count;}
 
 	bool IsNull() const;
+
+
+	/** Serializer to simplify it's serialisation */
+	bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess);
 };
+
+// register the Net Serializer for the Inventory Item to improve performance
+template<>
+struct TStructOpsTypeTraits<FPTRInventoryItem> : public TStructOpsTypeTraitsBase2<FPTRInventoryItem>
+{
+	enum { WithNetSerializer	= true,	};
+};
+
+/**
+ *	Multicast event type for when an inventory item changes
+ *	This is not network related and will in fact be broadcast only on machines calling the broadcast function
+ */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryItemChange, const FPTRInventoryItem &, InventoryItemChanged);
 
 /**
  *  UPTRInventoryComponent
@@ -166,6 +186,17 @@ protected:
 	void Net_OnUpdateItem(const FPTRInventoryItem& Item);
 	virtual void Net_OnUpdateItem_Implementation(const FPTRInventoryItem& Item);
 	virtual bool Net_OnUpdateItem_Validate(const FPTRInventoryItem& Item) const;
+
+
+public:
+
+	/**
+	 *	Simple event called on all machines when inventory items are updated
+	 *
+	 *	This is meant for other components to
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnInventoryItemChange OnUpdateItem;
 
 private:
 

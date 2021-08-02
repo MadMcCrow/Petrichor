@@ -117,6 +117,24 @@ protected:
 	bool Net_EndAllEvent_Validate() {return true;}
 
 
+protected:
+
+	/**
+	 *	This allow to prevent server function to be requested by clients
+	 *	if true the client will request the server to run the function
+	 *	if false the client will only run it's simulation, never asking for server to do the same
+	 *	this is useful for Weapons where the weapon component will trigger the Game Event
+	 *	on both the server and client manually
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="GameEvent")
+	bool bShouldCallServerOnClient;
+
+	/**
+	 *	This allows us to call separately on clients and server and
+	 *	let the client reconcile itself with the server at the end
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="GameEvent")
+	bool bServerShouldTriggerEventOnOwningClient;
 
 
 private:

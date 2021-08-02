@@ -5,14 +5,13 @@
 #include "Player/PTRPlayerState.h"
 #include "Weapons/PTRWeaponComponent.h"
 
-FName APTRCharacter::WeaponComponentBaseName	= TEXT("WeaponComponent");
+FName APTRCharacter::WeaponComponentName		= TEXT("WeaponComponent");
 FName APTRCharacter::FirstPersonWeaponMeshName	= TEXT("WeaponFPSMeshComp");
 FName APTRCharacter::ThirdPersonWeaponMeshName	= TEXT("WeaponTPSMeshComp");
 
 APTRCharacter::APTRCharacter(const FObjectInitializer& ObjectInitializer)
 	:Super(ObjectInitializer)
     ,WeaponSocketName("Weapon")
-    ,WeaponComponentClass(UPTRWeaponComponent::StaticClass())
 {
 	// WeaponMeshes
 	// FP
@@ -24,6 +23,9 @@ APTRCharacter::APTRCharacter(const FObjectInitializer& ObjectInitializer)
 	ThirdPersonWeaponMeshComponent->SetupAttachment(GetThirdPersonMesh(), WeaponSocketName);
 	ThirdPersonWeaponMeshComponent->SetOnlyOwnerSee(false);
 	ThirdPersonWeaponMeshComponent->SetOwnerNoSee(true);
+
+	WeaponComponent = ObjectInitializer.CreateDefaultSubobject<UPTRWeaponComponent>(this, WeaponComponentName);
+	WeaponComponent->SetIsReplicated(true);
 }
 
 void APTRCharacter::OnConstruction(const FTransform& Transform)
@@ -47,7 +49,7 @@ void APTRCharacter::OnRep_PlayerState()
 
 }
 
-UPTRInventoryComponent* APTRCharacter::GetInventory() const
+UPTRInventoryComponent* APTRCharacter::GetInventoryComponent_Implementation() const
 {
 	if (const APTRPlayerState* PS = GetPlayerState<APTRPlayerState>())
 	{
@@ -58,32 +60,19 @@ UPTRInventoryComponent* APTRCharacter::GetInventory() const
 	return nullptr;
 }
 
-UPTRWeaponComponent* APTRCharacter::AddWeapon(TSoftObjectPtr<UPTRWeapon> Weapon, bool bEquip)
+
+void APTRCharacter::AddWeapon(TSoftObjectPtr<UPTRWeapon> Weapon, bool bEquip)
 {
-	if (Weapon.IsNull())
+	if (WeaponComponent)
 	{
-		return nullptr;
+		WeaponComponent->SetWeaponMeshes(FirstPersonWeaponMeshComponent, ThirdPersonWeaponMeshComponent);
+		WeaponComponent->SetWeapon(Weapon);
 	}
-
-	const FString NameStr = WeaponComponentBaseName.ToString() + FString::Printf(TEXT("%d"), Weapon->WantedIndex);
-	auto WeaponComp = NewObject<UPTRWeaponComponent>(this, WeaponComponentClass, MakeUniqueObjectName(this, Weapon->GetClass(),FName(*NameStr)));
-
-	if (WeaponComp)
-	{
-		WeaponComp->SetWeaponMeshes(FirstPersonWeaponMeshComponent, ThirdPersonWeaponMeshComponent);
-		WeaponComp->SetWeapon(Weapon);
-		WeaponComp->RegisterComponent();
-		WeaponComp->SetIsReplicated(true);
-		// Todo : add safety for already present weapon at index :
-		Weapons.Add(Weapon->WantedIndex, WeaponComp);
-		return WeaponComp;
-	}
-
-	return nullptr;
 }
 
 void APTRCharacter::EquipWeapon(TSoftObjectPtr<UPTRWeapon> Weapon)
 {
+	/*
 	for (auto WeaponItr:Weapons)
 	{
 		if (WeaponItr.Value->GetWeapon() == Weapon)
@@ -91,21 +80,13 @@ void APTRCharacter::EquipWeapon(TSoftObjectPtr<UPTRWeapon> Weapon)
 			EquipWeaponIndex(WeaponItr.Key);
 		}
 	}
+	*/
 }
 
 void APTRCharacter::EquipWeaponIndex(int32 Weapon)
 {
 	ActiveWeaponIndex = Weapon;
 	// do extra stuff here ?
-}
-
-UPTRWeaponComponent* APTRCharacter::GetEquipedWeapon() const
-{
-	if (UPTRWeaponComponent* const* FoundWeapon = Weapons.Find(ActiveWeaponIndex))
-	{
-		return *FoundWeapon;
-	}
-	return nullptr;
 }
 
 

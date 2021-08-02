@@ -3,15 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Attributes/PTRAttributeInterface.h"
 #include "GameFramework/PlayerState.h"
+#include "Items/PTRInventoryInterface.h"
 #include "PTRPlayerState.generated.h"
 
 /**
  *	Player State stores Player information. this is transferred between maps.
  */
 UCLASS(ClassGroup=(PTR), Category="Petrichor")
-class PETRICHOR_API APTRPlayerState : public APlayerState, public IPTRAttributeInterface
+class PETRICHOR_API APTRPlayerState : public APlayerState, public IPTRInventoryInterface
 {
 	GENERATED_BODY()
 
@@ -24,9 +24,9 @@ public:
 	virtual void BeginPlay() override;
 	// \AActor API
 
-	// IPTRAttributeInterface API
+	// IPTRInventoryInterface API
 	virtual class UPTRInventoryComponent* GetInventoryComponent_Implementation() const override {return PlayerInventory;}
-	// \IPTRAttributeInterface API
+	// \IPTRInventoryInterface API
 
 
 
