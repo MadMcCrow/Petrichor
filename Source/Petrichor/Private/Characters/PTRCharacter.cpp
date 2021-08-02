@@ -53,7 +53,7 @@ UPTRInventoryComponent* APTRCharacter::GetInventoryComponent_Implementation() co
 {
 	if (const APTRPlayerState* PS = GetPlayerState<APTRPlayerState>())
 	{
-		return PS->GetInventoryComponent();
+		return Execute_GetInventoryComponent(PS);
 	}
 
 	// return nullptr... for now

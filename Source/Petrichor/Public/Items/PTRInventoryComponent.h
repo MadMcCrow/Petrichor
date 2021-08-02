@@ -11,6 +11,7 @@
 
 // forward declaration
 class UPTRItem;
+class UPTRInventoryComponent;
 
 // log for inventory
 DECLARE_LOG_CATEGORY_EXTERN(LogPTRInventory, Log, All);
@@ -100,7 +101,7 @@ struct TStructOpsTypeTraits<FPTRInventoryItem> : public TStructOpsTypeTraitsBase
  *	Multicast event type for when an inventory item changes
  *	This is not network related and will in fact be broadcast only on machines calling the broadcast function
  */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryItemChange, const FPTRInventoryItem &, InventoryItemChanged);
+DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_OneParam(FOnInventoryItemChange, UPTRInventoryComponent, OnUpdateItem, const FPTRInventoryItem &, InventoryItemChanged);
 
 /**
  *  UPTRInventoryComponent

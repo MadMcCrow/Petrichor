@@ -26,6 +26,8 @@ void UPTRGameEvent::StartEvent(AActor* Source, AActor* Target)
 	{
 		// directly call server
 		OnServerEventStart();
+		// and call server implementation (no need to go through networking)
+		Net_StartServerEvent_Implementation(Source, Target);
 	}
 	else
 	if (Source->GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
@@ -55,6 +57,7 @@ void UPTRGameEvent::OnServerEventStart_Implementation()
 #if WITH_EDITOR
 	UE_LOG(LogPTRGameEvent, Display, TEXT("Game Event %s : Start server Only"), *GetName());
 #endif // WITH_EDITOR
+
 }
 
 void UPTRGameEvent::OnClientEventStart_Implementation()

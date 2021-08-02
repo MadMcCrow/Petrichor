@@ -17,6 +17,12 @@ void UPTRWeaponComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 	SetIsReplicated(true);
+
+	if (auto Inv = GetInventoryComponent())
+	{
+		Inv->OnUpdateItem.AddUniqueDynamic(this, &UPTRWeaponComponent::OnInventoryChange);
+	}
+
 }
 
 void UPTRWeaponComponent::HolsterWeapon()
@@ -102,6 +108,20 @@ void UPTRWeaponComponent::SetWeapon(TSoftObjectPtr<UPTRWeapon> NewWeapon)
 			ActiveWeapon = NewWeapon.Get();
 			OnWeaponSet();
 		}
+	}
+}
+
+void UPTRWeaponComponent::AddWeapon(TSoftObjectPtr<UPTRWeapon> NewWeapon)
+{
+	//	TODO :
+	// do the same thing no matter your role, except server gets replicated :)
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+
+	}
+	if (GetOwnerRole() == ROLE_AutonomousProxy)
+	{
+
 	}
 }
 
@@ -219,6 +239,18 @@ void UPTRWeaponComponent::OnRep_WeaponStance(EPTRWeaponStance LastWeaponStance)
 			// Well that sucks; Server changed our weapon for us :///
 			// let's update to fix that
 			OnWeaponSet();
+		}
+	}
+}
+
+void UPTRWeaponComponent::OnInventoryChange(const FPTRInventoryItem& Item)
+{
+	auto SoftItem = FPTRSoftItemPath(Item.ToSoftPath());
+	if (auto ItemClass = SoftItem.GetClass())
+	{
+		if (ItemClass->IsChildOf(UPTRWeapon::StaticClass()))
+		{
+			AddWeapon(TSoftObjectPtr<UPTRWeapon>(SoftItem.ToSoftPath()));
 		}
 	}
 }

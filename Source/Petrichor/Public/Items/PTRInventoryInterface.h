@@ -23,7 +23,7 @@ class IPTRInventoryInterface
 
 public:
 	/** return Inventory component */
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category  = "Attributes")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category  = "Inventory")
 	UPTRInventoryComponent* GetInventoryComponent() const;
 	virtual UPTRInventoryComponent* GetInventoryComponent_Implementation() const PURE_VIRTUAL(,return nullptr;)
 };

@@ -2,21 +2,19 @@
 
 #pragma once
 
-
 #include "Components/ActorComponent.h"
-
 #include "Petrichor.h"
 #include "PTRWeapon.h"
-#include "Items/PTRInventoryComponent.h"
-
 #include "PTRWeaponComponent.generated.h"
 
-
-
+// forward declaration
+struct FPTRInventoryItem;
+class UPTRInventoryComponent;
 class USkeletalMeshComponent;
 
 /**
  *	Component responsible for handling weapons
+ *	@todo : comment to help documentation
  */
 UCLASS( ClassGroup=(PTR), Within="PTRCharacter" )
 class PETRICHOR_API UPTRWeaponComponent : public UActorComponent
@@ -68,6 +66,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void SetWeapon(TSoftObjectPtr<UPTRWeapon> NewWeapon);
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void AddWeapon(TSoftObjectPtr<UPTRWeapon> NewWeapon);
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Weapon")
 	void OnWeaponSet();
@@ -135,6 +136,9 @@ private:
 
 	UFUNCTION()
 	void OnRep_WeaponStance(EPTRWeaponStance LastWeaponStance);
+
+	UFUNCTION()
+	void OnInventoryChange(const FPTRInventoryItem& Item);
 
 
 public:

@@ -28,6 +28,15 @@ FSoftObjectPath FPTRSoftItemPath::ToSoftPath() const
 	return FSoftObjectPath(ItemPath);
 }
 
+TSubclassOf<UPTRItem> FPTRSoftItemPath::GetClass() const
+{
+	if (UAssetManager* Manager = UAssetManager::GetIfValid())
+	{
+		return Manager->GetPrimaryAssetObjectClass<UPTRItem>(UPTRSoftItemPathLibrary::SoftItemPathToAssetID(ItemPath));
+	}
+	return TSubclassOf<UPTRItem>();
+}
+
 UPTRItem* UPTRSoftItemPathLibrary::TryLoadSoftItemPath(const FPTRSoftItemPath& InPath)
 {
 	return InPath.TryLoad();

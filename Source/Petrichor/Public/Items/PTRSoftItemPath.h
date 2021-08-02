@@ -91,6 +91,8 @@ public:
 		return true;
 	}
 
+	// Get item class easier
+	TSubclassOf<UPTRItem> GetClass() const;
 };
 
 
