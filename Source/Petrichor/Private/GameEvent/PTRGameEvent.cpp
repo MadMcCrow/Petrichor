@@ -1,4 +1,7 @@
-// Copyright © Noé Perard-Gayot 2021.
+// Copyright © Noé Perard-Gayot 2021. Licenced under LGPL-3.0-or-later
+// You should have received a copy of the GNU Lesser General Public License
+// along with Petrichor. If not, see <https://www.gnu.org/licenses/>.
+
 
 #pragma once
 
@@ -7,7 +10,11 @@
 DEFINE_LOG_CATEGORY(LogPTRGameEvent);
 
 
-UPTRGameEvent::UPTRGameEvent( const FObjectInitializer &ObjectInitializer) : Super(ObjectInitializer)
+// CTR
+UPTRGameEvent::UPTRGameEvent( const FObjectInitializer &ObjectInitializer)
+: Super(ObjectInitializer)
+, bShouldCallServerOnClient(true)
+, bServerShouldTriggerEventOnOwningClient(true)
 {
 
 }
@@ -23,23 +30,30 @@ void UPTRGameEvent::StartEvent(AActor* Source, AActor* Target)
 	{
 		// directly call server
 		OnServerEventStart();
+		// and call server implementation (no need to go through networking)
+		Net_StartServerEvent_Implementation(Source, Target);
+
 	}
 	else
 	if (Source->GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
 	{
-		// directly call server
+		// directly call Client function
 		OnClientEventStart();
-	}
 
-	// Call server event so that everyone gets the replicated event
-	Net_StartServerEvent(Source, Target);
+		// Check that we actually should allow Client to ask server for event
+		if (bShouldCallServerOnClient)
+		{
+			// Call server event so that everyone gets the replicated event
+			Net_StartServerEvent(Source, Target);
+		}
+	}
 }
 
 void UPTRGameEvent::EndEvent()
 {
 	if (GetSource()->GetLocalRole() == ENetRole::ROLE_Authority)
 	{
-
+		Net_EndAllEvent();
 	}
 }
 
@@ -91,7 +105,10 @@ void UPTRGameEvent::Net_StartAllEvent_Implementation(AActor* Source, AActor* Tar
 	Instigator	= Source;
 	TargetActor	= Target;
 	// Call event on all Actors
-	OnEventStart();
+	if (bServerShouldTriggerEventOnOwningClient || Instigator->GetLocalRole() != ENetRole::ROLE_AutonomousProxy)
+	{
+		OnEventStart();
+	}
 }
 
 

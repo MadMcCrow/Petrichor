@@ -1,4 +1,6 @@
-// Copyright © Noé Perard-Gayot 2021.
+// Copyright © Noé Perard-Gayot 2021. Licenced under LGPL-3.0-or-later
+// You should have received a copy of the GNU Lesser General Public License
+// along with Petrichor. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Items/PTRInventoryComponent.h"
 
@@ -24,9 +26,29 @@ FPTRInventoryItem::FPTRInventoryItem(const TSoftObjectPtr<UPTRItem>& Path, int32
 {
 }
 
+
+FSoftObjectPath FPTRInventoryItem::ToSoftPath() const
+{
+	return FPTRSoftItemPath(AssetId).ToSoftPath();
+}
+
 bool FPTRInventoryItem::IsNull() const
 {
 	return FPTRSoftItemPath(AssetId).IsNull();
+}
+
+bool FPTRInventoryItem::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
+{
+	FSoftObjectPath Path = ToSoftPath();
+	Ar << Path;
+	Ar << Count;
+
+	// read if we are loading
+	if (Ar.IsLoading())
+	{
+		AssetId = UPTRSoftItemPathLibrary::SoftItemPathToAssetID(Path);
+	}
+	return true;
 }
 
 UPTRInventoryComponent::UPTRInventoryComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -145,6 +167,9 @@ void UPTRInventoryComponent::Net_OnUpdateItem_Implementation(const FPTRInventory
 			Items.Remove(*Item);
 		}
 	}
+
+	// broadcast the news :
+	OnUpdateItem.Broadcast(ItemKey);
 }
 
 bool UPTRInventoryComponent::Net_OnUpdateItem_Validate(const FPTRInventoryItem& ItemKey) const

@@ -1,20 +1,21 @@
-// Copyright © Noé Perard-Gayot 2021.
+// Copyright © Noé Perard-Gayot 2021. Licenced under LGPL-3.0-or-later
+// You should have received a copy of the GNU Lesser General Public License
+// along with Petrichor. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
 #include "PTRCharacterBase.h"
 #include "Items/PTRInventoryComponent.h"
-
+#include "Items/PTRInventoryInterface.h"
 #include "PTRCharacter.generated.h"
-
 
 class UPTRWeaponComponent;
 class UPTRWeapon;
 class USkeletalMeshComponent;
 
-
 UCLASS(Abstract, Blueprintable, config=Game)
-class APTRCharacter : public APTRCharacterBase
+class APTRCharacter : public APTRCharacterBase, public IPTRInventoryInterface
+
 {
 	GENERATED_BODY()
 public:
@@ -28,11 +29,9 @@ public:
 	// \APawn API
 
 
-	/**
-	*	@return Currenlty equiped weapon or nullptr if nothing found
-	*/
-	UFUNCTION(BlueprintPure, Category="Weapon")
-	UPTRInventoryComponent* GetInventory() const;
+	// IPTRInventoryInterface API
+	virtual class UPTRInventoryComponent* GetInventoryComponent_Implementation() const override;
+	// \IPTRInventoryInterface API
 
 
 	/**
@@ -42,7 +41,8 @@ public:
 	 *	@todo: Make this networked
 	 */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-	virtual UPTRWeaponComponent* AddWeapon(TSoftObjectPtr<UPTRWeapon> Weapon, bool bEquip = true);
+	virtual void AddWeapon(TSoftObjectPtr<UPTRWeapon> Weapon, bool bEquip = true);
+
 
 	/**
 	*	Equip a weapon making it the one currently used
@@ -58,12 +58,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	virtual void EquipWeaponIndex(int32 Weapon);
 
-	/**
-	*	@return Currenlty equiped weapon or nullptr if nothing found
-	*/
-	UFUNCTION(BlueprintPure, Category="Weapon")
-	UPTRWeaponComponent* GetEquipedWeapon() const;
-
 
 
 
@@ -75,21 +69,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	FName WeaponSocketName;
 
-	/**
-	*	Class of WeaponComponent to spawn
-	*	default to UPTRWeaponComponent::StaticClass()
-	*/
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-	TSubclassOf<UPTRWeaponComponent> WeaponComponentClass;
-
 private:
 
 	/**
 	 *	Weapon component will handle firing etc...
-	 *	There's one per weapon we have on us
 	 */
 	UPROPERTY(Transient, VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
-	TMap<int32,UPTRWeaponComponent*> Weapons;
+	class UPTRWeaponComponent* WeaponComponent;
 
 	/**
 	 *	Index of currently active WeaponComponent
@@ -111,8 +97,11 @@ private:
 
 public:
 
-	static FName WeaponComponentBaseName;
+	static FName WeaponComponentName;
 	static FName FirstPersonWeaponMeshName;
 	static FName ThirdPersonWeaponMeshName;
+
+
+	FORCEINLINE UPTRWeaponComponent* GetWeaponComponent() const {return WeaponComponent;}
 
 };

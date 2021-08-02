@@ -1,4 +1,6 @@
-// Copyright © Noé Perard-Gayot 2021.
+// Copyright © Noé Perard-Gayot 2021. Licenced under LGPL-3.0-or-later
+// You should have received a copy of the GNU Lesser General Public License
+// along with Petrichor. If not, see <https://www.gnu.org/licenses/>.
 
 
 #include "Characters/PTRCharacterAnimInstance.h"
@@ -61,17 +63,17 @@ void UPTRCharacterAnimInstance::LoadWeaponAnimations()
 {
 	if (OwningCharacter)
 	{
-		if (UPTRWeaponComponent* WeaponComp = OwningCharacter->GetEquipedWeapon())
+		if (UPTRWeaponComponent* WeaponComp = OwningCharacter->GetWeaponComponent())
 		{
 			if(auto Weapon =  WeaponComp->GetWeapon())
 			{
 				switch (CharacterType)
 				{
 				case EPTRCharacterViewType::FirstPerson:
-					WeaponSequenceAssets = Weapon->WeaponAnimations;
+					WeaponSequenceAssets = Weapon->GetFirstPersonCharacterAnimations();
 					break;
 				case EPTRCharacterViewType::ThirdPerson:
-					WeaponSequenceAssets = Weapon->CharacterAnimations;
+					WeaponSequenceAssets = Weapon->GetThirdPersonCharacterAnimations();
 					break;
 				}
 

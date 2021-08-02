@@ -1,4 +1,6 @@
-// Copyright © Noé Perard-Gayot 2021.
+// Copyright © Noé Perard-Gayot 2021. Licenced under LGPL-3.0-or-later
+// You should have received a copy of the GNU Lesser General Public License
+// along with Petrichor. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
@@ -17,7 +19,7 @@ class PETRICHOR_API UPTRWeapon : public UPTRItem
 {
 	GENERATED_BODY()
 
-public:
+protected:
 
 	/**
 	*	The animation for the 1rst person mesh
@@ -38,7 +40,7 @@ public:
 	TMap<EPTRWeaponStance, TSoftObjectPtr<UAnimSequenceBase>> WeaponAnimations;
 
 	/**
-	 *	The mesh to use, bot in FP and TP views
+	 *	The mesh to use, both in FP and TP views
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
 	TSoftObjectPtr<USkeletalMesh> WeaponMesh;
@@ -55,24 +57,39 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
 	int32 WantedIndex;
 
-protected:
 
-	UFUNCTION(BlueprintNativeEvent, Category= "Weapon" )
-	void FirePrimary();
-	void FirePrimary_Implementation() {NativeFirePrimary();}
+	/** Game Event triggered on Primary Fire */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "GameEvent")
+	class UPTRGameEvent* PrimaryGameEvent;
 
-	UFUNCTION(BlueprintNativeEvent, Category= "Weapon")
-	void FireSecondary();
-	void FireSecondary_Implementation() {NativeFirePrimary();}
-
-protected:
-	UFUNCTION()
-	virtual void NativeFirePrimary() {};
-
-	UFUNCTION()
-	virtual void NativeFireSecondary() {};
+	/** Game Event triggered on Secondary Fire */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "GameEvent")
+	class UPTRGameEvent* SecondaryGameEvent;
 
 
 public:
+
+	/** Custom event called when firing Weapon */
+	UFUNCTION(BlueprintNativeEvent, Category= "Weapon" )
+	void FirePrimary(AActor * Instigator);
+	virtual void FirePrimary_Implementation(AActor * Instigator);
+
+	/** Custom event called when firing Weapon */
+	UFUNCTION(BlueprintNativeEvent, Category= "Weapon")
+	void FireSecondary(AActor * Instigator);
+	virtual void FireSecondary_Implementation(AActor * Instigator);
+
+	/** Helper to get animation faster for the FPV and TPV characters */
+	UFUNCTION(BlueprintPure, Category = "Weapon|Animations")
+	TSoftObjectPtr<UAnimSequenceBase> GetAnimationAsset(EPTRCharacterViewType View, EPTRWeaponStance Stance) const;
+
+	/** Helper to get animation faster  for the weapon itself */
+	UFUNCTION(BlueprintPure, Category = "Weapon|Animations")
+	TSoftObjectPtr<UAnimSequenceBase> GetMeshAnimation(EPTRWeaponStance Stance) const;
+
+	/** Simple getters with const reference */
+	FORCEINLINE const TSoftObjectPtr<USkeletalMesh>& GetMesh() const {return WeaponMesh;}
+	FORCEINLINE const TMap<EPTRWeaponStance, TSoftObjectPtr<UAnimSequenceBase>>& GetFirstPersonCharacterAnimations() const {return PlayerAnimations;}
+	FORCEINLINE const TMap<EPTRWeaponStance, TSoftObjectPtr<UAnimSequenceBase>>& GetThirdPersonCharacterAnimations() const {return CharacterAnimations;}
 
 };

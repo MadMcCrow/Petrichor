@@ -1,8 +1,10 @@
-// Copyright © Noé Perard-Gayot 2021.
-
+// Copyright © Noé Perard-Gayot 2021. Licenced under LGPL-3.0-or-later
+// You should have received a copy of the GNU Lesser General Public License
+// along with Petrichor. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Attributes/PTRAttributeComponent.h"
-#include "Attributes/PTRAttributeInterface.h"
+#include "Items/PTRInventoryInterface.h"
+
 
 UPTRAttributeComponent::UPTRAttributeComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -40,5 +42,5 @@ int32 UPTRAttributeComponent::GetAttributeCount(const FPTRSoftItemPath& InItem) 
 
 UPTRInventoryComponent* UPTRAttributeComponent::GetInventoryComponent() const
 {
-	return IPTRAttributeInterface::Execute_GetInventoryComponent(GetOwner());
+	return IPTRInventoryInterface::Execute_GetInventoryComponent(GetOwner());
 }
