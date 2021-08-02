@@ -17,12 +17,15 @@ void UPTRAttributeComponent::InitAttributes(const TArray<FPTRAttributeDefinition
 
 FPTRAttribute UPTRAttributeComponent::GetAttribute(const FPTRSoftItemPath& InItem) const
 {
-	return FPTRAttribute(GetAttributeCount(InItem), GetAttributeCount(InItem));
+	return FPTRAttribute(GetAttributeCount(InItem), GetAttributeBaseValue(InItem));
 }
 
 int32 UPTRAttributeComponent::GetAttributeBaseValue(const FPTRSoftItemPath& InItem) const
 {
-	Attributes.Find(FPTRAttributeDefinition(InItem));
+	if (const FPTRAttributeDefinition* Attribute = Attributes.Find(FPTRAttributeDefinition(InItem)))
+	{
+		return Attribute->BaseValue;
+	}
 	return 0;
 }
 

@@ -18,23 +18,54 @@ void UPTRGameEvent::StartEvent(AActor* Source, AActor* Target)
 	UE_LOG(LogPTRGameEvent, Display, TEXT("Start Event %s"), *GetName());
 #endif // WITH_EDITOR
 	// call server and client functions
+
+	if (Source->GetLocalRole() == ENetRole::ROLE_Authority)
+	{
+		// directly call server
+		OnServerEventStart();
+	}
+	else
+	if (Source->GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+	{
+		// directly call server
+		OnClientEventStart();
+	}
+
+	// Call server event so that everyone gets the replicated event
 	Net_StartServerEvent(Source, Target);
-	Net_StartClientEvent(Source, Target);
+}
+
+void UPTRGameEvent::EndEvent()
+{
+	if (GetSource()->GetLocalRole() == ENetRole::ROLE_Authority)
+	{
+
+	}
 }
 
 void UPTRGameEvent::OnServerEventStart_Implementation()
 {
-
+#if WITH_EDITOR
+	UE_LOG(LogPTRGameEvent, Display, TEXT("Game Event %s : Start server Only"), *GetName());
+#endif // WITH_EDITOR
 }
 
 void UPTRGameEvent::OnClientEventStart_Implementation()
 {
-
+#if WITH_EDITOR
+	UE_LOG(LogPTRGameEvent, Display, TEXT("Game Event %s : Start client Only"), *GetName());
+#endif // WITH_EDITOR
 }
 
 void UPTRGameEvent::OnEventStart_Implementation()
 {
+#if WITH_EDITOR
+	UE_LOG(LogPTRGameEvent, Display, TEXT("Game Event %s : Start Multicast replicated"), *GetName());
+#endif // WITH_EDITOR
+}
 
+void UPTRGameEvent::OnEventEnd_Implementation()
+{
 }
 
 AActor* UPTRGameEvent::GetSource() const
@@ -49,36 +80,23 @@ AActor* UPTRGameEvent::GetTarget() const
 
 void UPTRGameEvent::Net_StartServerEvent_Implementation(AActor* Source, AActor* Target)
 {
-#if WITH_EDITOR
-	UE_LOG(LogPTRGameEvent, Display, TEXT("Start Event on server %s"), *GetName());
-#endif // WITH_EDITOR
-
 	Instigator	= Source;
 	TargetActor	= Target;
 	// Call event on Server
-	OnServerEventStart();
-}
-
-void UPTRGameEvent::Net_StartClientEvent_Implementation(AActor* Source, AActor* Target)
-{
-#if WITH_EDITOR
-	UE_LOG(LogPTRGameEvent, Display, TEXT("Start Event on Client %s"), *GetName());
-#endif // WITH_EDITOR
-
-	Instigator	= Source;
-	TargetActor	= Target;
-	// Call event on Client
-	OnClientEventStart();
+	Net_StartAllEvent(Source,Target);
 }
 
 void UPTRGameEvent::Net_StartAllEvent_Implementation(AActor* Source, AActor* Target)
 {
-#if WITH_EDITOR
-	UE_LOG(LogPTRGameEvent, Display, TEXT("Start Event Multicast %s"), *GetName());
-#endif // WITH_EDITOR
-
 	Instigator	= Source;
 	TargetActor	= Target;
 	// Call event on all Actors
 	OnEventStart();
+}
+
+
+inline void UPTRGameEvent::Net_EndAllEvent_Implementation()
+{
+	// Call End Event on all Actors
+	OnEventEnd();
 }

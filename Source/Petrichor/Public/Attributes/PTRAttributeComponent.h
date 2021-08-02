@@ -17,6 +17,7 @@ struct FPTRAttributeDefinition : public FTableRowBase
 {
 	GENERATED_BODY()
 
+	// conversion CTR for ease of use
 	FPTRAttributeDefinition(const FPTRSoftItemPath& AssetPath = FPTRSoftItemPath()) : Asset(AssetPath.ToSoftPath())
 	{}
 
@@ -46,6 +47,8 @@ struct FPTRAttributeDefinition : public FTableRowBase
 		const uint32 B = GetTypeHash(Other);
 		return A == B;
 	}
+
+
 
 };
 

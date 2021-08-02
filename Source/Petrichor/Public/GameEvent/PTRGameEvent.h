@@ -28,9 +28,15 @@ public:
 	 *	Start event
 	 *	It will try to start event on both server and client
 	 */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "GameEvent")
 	void StartEvent(AActor * Source, AActor* Target);
 
+	/**
+	*	OnEventStart
+	*	Specify that this event is done
+	*/
+	UFUNCTION(BlueprintCallable, Category = "GameEvent")
+	void EndEvent();
 
 	/**
 	 *	OnServerEventStart
@@ -42,19 +48,29 @@ public:
 
 	/**
 	*	OnClientEventStart
-	*	Server Only event.
+	*	Owning Client Only event.
 	*/
-	UFUNCTION(BlueprintNativeEvent, BlueprintCosmetic, Category = "GameEvent|Server")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCosmetic, Category = "GameEvent|Client")
 	void OnClientEventStart();
 	virtual void OnClientEventStart_Implementation();
 
 	/**
 	*	OnEventStart
-	*	Server Only event.
+	*	Other Clients, Server and Owning client
 	*/
-	UFUNCTION(BlueprintNativeEvent, Category = "GameEvent|Server")
+	UFUNCTION(BlueprintNativeEvent, Category = "GameEvent|Multicast")
 	void OnEventStart();
 	virtual void OnEventStart_Implementation();
+
+	/**
+	*	OnEventStart
+	*	Other Clients, Server and Owning client
+	*/
+	UFUNCTION(BlueprintNativeEvent, Category = "GameEvent|Multicast")
+	void OnEventEnd();
+	virtual void OnEventEnd_Implementation();
+
+
 
 	/**
 	*	GetSource
@@ -85,20 +101,23 @@ protected:
 	bool Net_StartServerEvent_Validate(AActor * Source, AActor* Target) {return true;}
 
 	/**
-	*	Start event on client
-	*/
-	UFUNCTION(Client, Reliable, WithValidation)
-	void Net_StartClientEvent(AActor * Source, AActor* Target);
-	void Net_StartClientEvent_Implementation(AActor * Source, AActor* Target);
-	bool Net_StartClientEvent_Validate(AActor * Source, AActor* Target) {return true;}
-
-	/**
-	*	Start event on client
+	*	Start event on all clients
 	*/
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
 	void Net_StartAllEvent(AActor * Source, AActor* Target);
 	void Net_StartAllEvent_Implementation(AActor * Source, AActor* Target);
 	bool Net_StartAllEvent_Validate(AActor * Source, AActor* Target) {return true;}
+
+	/**
+	 *	End event on all clients
+	 */
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
+	void Net_EndAllEvent();
+	void Net_EndAllEvent_Implementation();
+	bool Net_EndAllEvent_Validate() {return true;}
+
+
+
 
 private:
 	/** Source of this event and who will be responsible for handling it */
