@@ -8,9 +8,13 @@
 
 class PETRICHOREDITOR_API FPTREditorModule : public IModuleInterface
 {
-	public:
+public:
 	// IModuleInterface
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
+
+private:
+	// secretly a EAssetTypeCategories::Type
+	uint32 GameAssetCategory = 0;
 
 };

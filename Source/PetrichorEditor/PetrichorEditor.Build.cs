@@ -8,6 +8,6 @@ public class PetrichorEditor : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine"});
-		PrivateDependencyModuleNames.AddRange((new []{ "InputCore", "UnrealEd", "ClassViewer", "Slate", "SlateCore", "EditorStyle", "PropertyEditor", "Petrichor" }));
+		PrivateDependencyModuleNames.AddRange((new []{ "AssetTools", "InputCore", "UnrealEd", "ClassViewer", "Slate", "SlateCore", "EditorStyle", "PropertyEditor", "Petrichor" }));
 	}
 }

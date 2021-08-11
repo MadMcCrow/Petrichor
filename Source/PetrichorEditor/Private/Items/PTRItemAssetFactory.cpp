@@ -4,7 +4,6 @@
 
 #include "Items/PTRItemAssetFactory.h"
 #include "Items/PTRItem.h"
-
 #include "ClassViewerModule.h"
 #include "ClassViewer/Private/UnloadedBlueprintData.h"
 #include "AssetTypeCategories.h"
@@ -12,7 +11,7 @@
 #include "Kismet2/SClassPickerDialog.h"
 
 
-#define LOCTEXT_NAMESPACE "PTRItemFactory"
+#define LOCTEXT_NAMESPACE "PTREditor"
 
 class FPTRItemClassParentFilter : public IClassViewerFilter
 {
