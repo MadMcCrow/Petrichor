@@ -16,7 +16,7 @@ class AActor;
 /**
  *	Player State stores Player information. this is transferred between maps.
  */
-UCLASS(ClassGroup=(PTR), Category="Petrichor|GameEvent", DefaultToInstanced, Blueprintable, EditInlineNew)
+UCLASS(ClassGroup=(PTR), Category="Petrichor|GameEvent", DefaultToInstanced, EditInlineNew)
 class PETRICHOR_API UPTRGameEvent : public UObject
 {
 	GENERATED_BODY()
