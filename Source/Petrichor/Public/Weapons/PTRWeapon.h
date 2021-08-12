@@ -57,7 +57,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
 	int32 WantedIndex;
 
-
 	/** Game Event triggered on Primary Fire */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "GameEvent")
 	class UPTRGameEvent* PrimaryGameEvent;
@@ -65,7 +64,6 @@ protected:
 	/** Game Event triggered on Secondary Fire */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "GameEvent")
 	class UPTRGameEvent* SecondaryGameEvent;
-
 
 public:
 

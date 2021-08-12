@@ -17,7 +17,7 @@
  *	Simple enum to differentiate FP and TP views
  *	Used in Animation instances, Weapons and characters
  */
-UENUM(BlueprintType)
+UENUM(BlueprintType, Category="Petrichor")
 enum class EPTRCharacterViewType : uint8
 {
 	FirstPerson		UMETA(DisplayName="FirstPerson Arms"),
@@ -29,7 +29,7 @@ enum class EPTRCharacterViewType : uint8
  *	Primary fire is left click traditionally, Secondary is right click.
  *	This is used for animation and visual purposes as well as input
  */
-UENUM(BlueprintType)
+UENUM(BlueprintType, Category="Petrichor")
 enum class EPTRFireMode : uint8
 {
 	Primary		UMETA(DisplayName="Primary"),
@@ -40,7 +40,7 @@ enum class EPTRFireMode : uint8
 *	Primary fire is left click traditionally, Secondary is right click.
 *	This is used for weapon animation and visual purposes : Anim Instances and assets
 */
-UENUM(BlueprintType)
+UENUM(BlueprintType, Category="Petrichor")
 enum class EPTRWeaponStance : uint8
 {
 	None		UMETA(DisplayName="No Weapon"),

@@ -9,12 +9,17 @@
 #include "PTRGameEvent.generated.h"
 
 
-DECLARE_LOG_CATEGORY_EXTERN(LogPTRGameEvent, Log, All);
-
 class AActor;
+class UPTRGameEvent;
+
+DECLARE_LOG_CATEGORY_EXTERN(LogPTRGameEvent, Log, All);
+DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_OneParam(FPTROnGameEventEnd, UPTRGameEvent, OnGameEventEnd, bool, bIsSuccess);
+
 
 /**
- *	Player State stores Player information. this is transferred between maps.
+ *	UPTRGameEvent
+ *	A game event is a scripting object that will execute a script on both server and client in an optimised way
+ *	@note
  */
 UCLASS(ClassGroup=(PTR), Category="Petrichor|GameEvent", DefaultToInstanced, EditInlineNew)
 class PETRICHOR_API UPTRGameEvent : public UObject
@@ -34,11 +39,19 @@ public:
 	void StartEvent(AActor * Source, AActor* Target);
 
 	/**
-	*	OnEventStart
-	*	Specify that this event is done
-	*/
+	 *	OnEventStart
+	 *	Specify that this event is done
+	 */
 	UFUNCTION(BlueprintCallable, Category = "GameEvent")
-	void EndEvent();
+	void EndEvent(bool bEndSuccess = true);
+
+	/**
+	 *	CanCallEvent
+	 *	Check if the event has the necessary requirements to run.
+	 */
+	UFUNCTION(BlueprintNativeEvent, BlueprintCosmetic, Category = "GameEvent")
+	bool CanCallEvent() const;
+	virtual bool CanCallEvent_Implementation() const;
 
 	/**
 	 *	OnServerEventStart
@@ -49,17 +62,26 @@ public:
 	virtual void OnServerEventStart_Implementation();
 
 	/**
-	*	OnClientEventStart
-	*	Owning Client Only event.
-	*/
+	 *	OnClientEventStart
+	 *	Clients event.
+	 */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCosmetic, Category = "GameEvent|Client")
 	void OnClientEventStart();
 	virtual void OnClientEventStart_Implementation();
 
 	/**
-	*	OnEventStart
-	*	Other Clients, Server and Owning client
+	*	OnOwningClientEventStart
+	*	Owning client only event.
 	*/
+	UFUNCTION(BlueprintNativeEvent, BlueprintCosmetic, Category = "GameEvent|Client")
+	void OnOwningClientEventStart();
+	virtual void OnOwningClientEventStart_Implementation();
+
+
+	/**
+	 *	OnEventStart
+	 *	Other Clients, Server and Owning client
+	 */
 	UFUNCTION(BlueprintNativeEvent, Category = "GameEvent|Multicast")
 	void OnEventStart();
 	virtual void OnEventStart_Implementation();
@@ -72,27 +94,36 @@ public:
 	void OnEventEnd();
 	virtual void OnEventEnd_Implementation();
 
-
-
 	/**
-	*	GetSource
-	*	return Source/Instigator for scripting
-	*/
+	 *	GetSource
+	 *	return Source/Instigator for scripting
+	 */
 	UFUNCTION(BlueprintPure, Category = "GameEvent",  meta = (HideSelfPin = "true", CompactNodeTitle = "Source"))
 	virtual AActor* GetSource() const;
 
-
 	/**
-	*	GetTarget
-	*	return Target for scripting
-	*/
+	 *	GetTarget
+	 *	return Target for scripting
+	 */
 	UFUNCTION(BlueprintPure, Category = "GameEvent",  meta = (HideSelfPin = "true",  CompactNodeTitle = "Target"))
 	virtual AActor* GetTarget() const;
 
+	/**
+	 *	IsRunning
+	 *	return bIsRunning for scripting
+	 */
+	UFUNCTION(BlueprintPure, Category = "GameEvent",  meta = (HideSelfPin = "true",  CompactNodeTitle = "Is Running ?"))
+	virtual bool IsRunning() const;
 
+	/**
+	*	IsRunning
+	*	return bIsRunning for scripting
+	*/
+	UFUNCTION(BlueprintPure, Category = "GameEvent",  meta = (HideSelfPin = "true",  CompactNodeTitle = "Is Success ?"))
+	virtual bool IsSuccess() const;
 
-
-protected:
+	//------ Server Functions -----//
+private:
 
 	/**
 	 *	Start event on server
@@ -103,40 +134,58 @@ protected:
 	bool Net_StartServerEvent_Validate(AActor * Source, AActor* Target) {return true;}
 
 	/**
-	*	Start event on all clients
-	*/
+	 *	Start event on all clients
+	 */
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
-	void Net_StartAllEvent(AActor * Source, AActor* Target);
-	void Net_StartAllEvent_Implementation(AActor * Source, AActor* Target);
-	bool Net_StartAllEvent_Validate(AActor * Source, AActor* Target) {return true;}
+	void Net_StartClientEvent(AActor * Source, AActor* Target);
+	void Net_StartClientEvent_Implementation(AActor * Source, AActor* Target);
+	bool Net_StartClientEvent_Validate(AActor * Source, AActor* Target) {return true;}
 
 	/**
 	 *	End event on all clients
 	 */
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
-	void Net_EndAllEvent();
-	void Net_EndAllEvent_Implementation();
-	bool Net_EndAllEvent_Validate() {return true;}
+	void Net_EndClientEvent(bool bEndSuccess);
+	void Net_EndClientEvent_Implementation(bool bEndSuccess);
+	bool Net_EndClientEvent_Validate(bool bEndSuccess) {return true;}
 
+public:
+
+	UPROPERTY(BlueprintAssignable, Category="GameEvent|Events")
+	FPTROnGameEventEnd OnGameEventEnd;
 
 protected:
+	/**
+	 *	bReplicatedEvent
+	 *	will this event be executed on remote machines
+	 *	@note this is useful for local only events
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="GameEvent|Replication")
+	bool bReplicatedEvent;
 
 	/**
-	 *	This allow to prevent server function to be requested by clients
-	 *	if true the client will request the server to run the function
-	 *	if false the client will only run it's simulation, never asking for server to do the same
-	 *	this is useful for Weapons where the weapon component will trigger the Game Event
-	 *	on both the server and client manually
+	 *	bClientRunEvent
+	 *	Should client execute OnEventStart
+	 *	@note this is useful if you want client only to simulate event, without doing anything
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="GameEvent")
-	bool bShouldCallServerOnClient;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="GameEvent|Replication")
+	bool bClientRunEvent;
 
 	/**
-	 *	This allows us to call separately on clients and server and
-	 *	let the client reconcile itself with the server at the end
+	 *	bClientRunEvent
+	 *	Should server execute OnEventStart
+	 *	@note this is useful if you want StartEvent to only happen on client
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="GameEvent")
-	bool bServerShouldTriggerEventOnOwningClient;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="GameEvent|Replication")
+	bool bServerRunEvent;
+
+	/** Get local role (from source/instigator of event) */
+	UFUNCTION(BlueprintPure, Category="GameEvent")
+	ENetRole GetLocalRole() const;
+
+	/** Get remote role (from source/instigator of event) */
+	UFUNCTION(BlueprintPure, Category="GameEvent")
+	ENetRole GetRemoteRole() const;
 
 
 private:
@@ -148,4 +197,11 @@ private:
 	UPROPERTY(Transient, DuplicateTransient, BlueprintGetter="GetTarget")
 	AActor * TargetActor;
 
+	/** Target for this Event, might be equal to Instigator */
+	UPROPERTY(Transient, DuplicateTransient, BlueprintGetter="IsRunning")
+	bool bIsRunning;
+
+	/** Target for this Event, might be equal to Instigator */
+	UPROPERTY(Transient, DuplicateTransient, BlueprintGetter="IsSuccess")
+	bool bIsSuccess;
 };
