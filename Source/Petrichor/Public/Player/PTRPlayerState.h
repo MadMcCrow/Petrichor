@@ -10,8 +10,12 @@
 #include "PTRPlayerState.generated.h"
 
 /**
- *	Player State stores Player information. this is transferred between maps.
- */
+*  Player State holds all the important data of the player.
+*
+*  Note :
+*  It may actually make more sens to hold inventory in the character to handle death in MP.
+*  But it make more sens for SP because it has consistency on level loading/streaming
+*/
 UCLASS(ClassGroup=(PTR), Category="Petrichor")
 class PETRICHOR_API APTRPlayerState : public APlayerState, public IPTRInventoryInterface
 {

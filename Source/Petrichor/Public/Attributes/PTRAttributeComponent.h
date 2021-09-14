@@ -49,9 +49,6 @@ struct FPTRAttributeDefinition : public FTableRowBase
 		const uint32 B = GetTypeHash(Other);
 		return A == B;
 	}
-
-
-
 };
 
 /**
@@ -138,9 +135,8 @@ public:
 private:
 
 	/**
-	 *  The items this inventory has
-	 *  FPTRInventoryItem provide a hash function to ensure that there's no double
-	 *  TSet ensure faster searches compared to arrays.
+	 *	Attributes
+	 *
 	 */
 	UPROPERTY(Transient, VisibleAnywhere, Category="Attributes")
 	TSet<FPTRAttributeDefinition> Attributes;

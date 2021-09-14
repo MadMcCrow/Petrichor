@@ -123,9 +123,9 @@ bool UPTRGameEvent::IsSuccess() const
 
 void UPTRGameEvent::Net_StartServerEvent_Implementation(AActor* Source, AActor* Target)
 {
-	check(GetLocalRole() == ROLE_Authority)
 	Instigator	= Source;
 	TargetActor	= Target;
+	check(GetLocalRole() == ROLE_Authority)
 	// Call events on Server
 	OnServerEventStart();
 	// we also are owning client

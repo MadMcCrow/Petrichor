@@ -93,6 +93,16 @@ public:
 		return true;
 	}
 
+	friend uint32 GetTypeHash(const FPTRSoftItemPath& SoftItem)
+	{
+		return GetTypeHash(SoftItem.ItemPath);
+	}
+
+	bool operator==(const FPTRSoftItemPath& rhs) const
+	{
+		return rhs.ItemPath == ItemPath;
+	}
+
 	// Get item class easier
 	TSubclassOf<UPTRItem> GetClass() const;
 };
@@ -104,7 +114,7 @@ struct TStructOpsTypeTraits<FPTRSoftItemPath> : public TStructOpsTypeTraitsBase2
 {
 	enum
 	{
-		WithSerializer	= true, // causes errors
+		WithSerializer	= true, // might causes errors
 		WithNetSerializer	= true,
 	};
 };

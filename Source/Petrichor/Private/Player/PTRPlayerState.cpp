@@ -7,6 +7,7 @@
 #include "Engine/AssetManager.h"
 #include "Items/PTRInventoryComponent.h"
 #include "Attributes/PTRAttributeComponent.h"
+#include "Items/PTRItemTableRow.h"
 
 FName APTRPlayerState::InventoryComponentName = TEXT("InventoryComponent");
 FName APTRPlayerState::AttributeComponentName = TEXT("AttributeComponent");
@@ -29,30 +30,26 @@ void APTRPlayerState::BeginPlay()
 		{
 			if (const UDataTable* ItemDataTable = Cast<UDataTable>(StartingItem.TryLoad()))
 			{
-				TArray<FPTRInventoryItem*> StartingItemsPtr;
-				TSet<FPTRInventoryItem> StartingItems;
-
-				ItemDataTable->GetAllRows<FPTRInventoryItem>(
-					TEXT("APTRPlayerState : Getting Starting items"), StartingItemsPtr);
-
 				UAssetManager* Manager = UAssetManager::GetIfValid();
+
 				if (!Manager)
 				{
 					return;
 				}
 
-				for (auto ItemItr : StartingItemsPtr)
-				{
-					if (ItemItr)
+				TMap<FPTRSoftItemPath, int32> InitItems;
+				ItemDataTable->ForeachRow<FPTRItemTableRow>(
+					TEXT("APTRPlayerState : Getting Starting items"),
+					[&Manager, &InitItems](const FName &RowName, const FPTRItemTableRow& Row)
 					{
-						if (!Manager->GetPrimaryAssetPath(ItemItr->AssetId).IsNull())
+						const auto AssetPath = Manager->GetPrimaryAssetPath(Row.AssetId);
+						if (!AssetPath.IsNull())
 						{
-							StartingItems.Add(*ItemItr);
+							InitItems.Add(FPTRSoftItemPath(AssetPath), Row.Count);
 						}
-					}
-				}
+					});
 				// init the inventory
-				PlayerInventory->InitInventory(StartingItems);
+				PlayerInventory->InitInventory(InitItems);
 			}
 		}
 		if (PlayerAttributes)

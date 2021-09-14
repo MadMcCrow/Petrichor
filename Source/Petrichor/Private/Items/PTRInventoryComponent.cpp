@@ -3,56 +3,18 @@
 // along with Petrichor. If not, see <https://www.gnu.org/licenses/>.
 
 #include "Items/PTRInventoryComponent.h"
-
 #include "Engine/AssetManager.h"
-#include "Items/PTRItem.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 DEFINE_LOG_CATEGORY(LogPTRInventory);
 
-FPTRInventoryItem::FPTRInventoryItem(const FPTRSoftItemPath &Path, int32 Num): Super(), Count(Num)
+UPTRInventoryComponent::UPTRInventoryComponent(const FObjectInitializer& ObjectInitializer)
+: Super(ObjectInitializer)
+, bUseMaxDelta(false)
+, MaxLocalDelta(5)
+, Items()
+, LocalDeltaItems()
 {
-	if (!Path.IsNull())
-	{
-		if (UAssetManager* Manager = UAssetManager::GetIfValid())
-		{
-			AssetId = Manager->GetPrimaryAssetIdForPath(Path);
-		}
-	}
-}
-
-FPTRInventoryItem::FPTRInventoryItem(const TSoftObjectPtr<UPTRItem>& Path, int32 Num)
-: FPTRInventoryItem(Path.ToSoftObjectPath(), Num)
-{
-}
-
-FSoftObjectPath FPTRInventoryItem::ToSoftPath() const
-{
-	return FPTRSoftItemPath(AssetId).ToSoftPath();
-}
-
-bool FPTRInventoryItem::IsNull() const
-{
-	return FPTRSoftItemPath(AssetId).IsNull();
-}
-
-bool FPTRInventoryItem::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
-{
-	FSoftObjectPath Path = ToSoftPath();
-	Ar << Path;
-	Ar << Count;
-
-	// read if we are loading
-	if (Ar.IsLoading())
-	{
-		AssetId = UPTRSoftItemPathLibrary::SoftItemPathToAssetID(Path);
-	}
-	return true;
-}
-
-UPTRInventoryComponent::UPTRInventoryComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
-{
-	Items.Empty();
 }
 
 bool UPTRInventoryComponent::AddItem(const FPTRSoftItemPath& Item, int32 Count)
@@ -61,15 +23,9 @@ bool UPTRInventoryComponent::AddItem(const FPTRSoftItemPath& Item, int32 Count)
 	{
 		return false;
 	}
-	// Only server can add items, get over it.
-	if (GetOwnerRole() == ROLE_Authority)
-	{
-		// Warning this will load the item
-		const int32 NewCount = ItemCount(Item) + Count;
-		Net_UpdateItem(FPTRInventoryItem(Item, NewCount));
-		return true;
-	}
-	return false;
+
+	UpdateItem(Item, Count);
+	return true;
 }
 
 bool UPTRInventoryComponent::RemoveItem(const FPTRSoftItemPath& Item, int32 Count)
@@ -79,15 +35,9 @@ bool UPTRInventoryComponent::RemoveItem(const FPTRSoftItemPath& Item, int32 Coun
 		return false;
 	}
 
-	if (GetOwnerRole() == ROLE_Authority)
-	{
-		const int32 NewCount = ItemCount(Item) - Count;
-		Net_UpdateItem(FPTRInventoryItem(Item, Count));
-		return true;
-	}
-	return false;
+	UpdateItem(Item, -1 * Count);
+	return true;
 }
-
 
 int32 UPTRInventoryComponent::ItemCount(const FPTRSoftItemPath& Item) const
 {
@@ -96,10 +46,9 @@ int32 UPTRInventoryComponent::ItemCount(const FPTRSoftItemPath& Item) const
 		return 0;
 	}
 
-	const auto Key	= FPTRInventoryItem(Item, -1);
-	if (const auto FoundItem = Items.FindByHash(GetTypeHash(Key),Key))
+	if (const auto FoundItem = GetItems().Find(Item))
 	{
-		return FoundItem->Count;
+		return *FoundItem;
 	}
 	return 0;
 }
@@ -109,69 +58,87 @@ bool UPTRInventoryComponent::HasItem(const FPTRSoftItemPath& Item) const
 	return ItemCount(Item) > 0;
 }
 
-TSet<FPTRInventoryItem> UPTRInventoryComponent::GetItems() const
+TMap<FPTRSoftItemPath, int32> UPTRInventoryComponent::GetItems(bool bSynchronisedOnly /*= false */) const
 {
-	return Items;
+	if (bSynchronisedOnly)
+	{
+		return Items;
+	}
+
+	return MergeMaps(Items, LocalDeltaItems);
 }
 
-void UPTRInventoryComponent::InitInventory(TSet<FPTRInventoryItem>& InitItems)
+void UPTRInventoryComponent::InitInventory(const TMap<FPTRSoftItemPath, int32> &InitItems)
 {
 	if (GetOwnerRole() == ROLE_Authority)
 	{
-		// update server's version
-		Items = InitItems;
-
 		for (auto ItemItr : InitItems)
 		{
-			Net_OnUpdateItem(ItemItr);
+			UpdateItem(ItemItr.Key, ItemItr.Value, true);
 		}
 	}
 }
 
-
-void UPTRInventoryComponent::Net_UpdateItem_Implementation(const FPTRInventoryItem& Item)
+void UPTRInventoryComponent::UpdateItem(const FPTRSoftItemPath& Item, int32 Count, bool bForceSync /*= false*/)
 {
-	if (GetOwnerRole() == ROLE_Authority)
+	if (LocalDeltaItems.Contains(Item))
 	{
-		// Make sure Item is valid :
-		 if (!Item.IsNull())
-		 {
-		 	// check for change first
-		 	if (ItemCount(FPTRSoftItemPath(Item.AssetId)) != Item.Count)
-		 	{
-#if !UE_BUILD_SHIPPING
-		 	UE_LOG(LogPTRInventory, Display, TEXT("adding %i %s in %s"), Item.Count, *Item.ToString(), *GetOwner()->GetName());
-#endif //UE_BUILD_SHIPPING
-		 		Net_OnUpdateItem(Item);
-		 	}
-		 }
-	}
-}
-
-bool UPTRInventoryComponent::Net_UpdateItem_Validate(const FPTRInventoryItem& Item) const
-{
-	return true;
-}
-
-void UPTRInventoryComponent::Net_OnUpdateItem_Implementation(const FPTRInventoryItem& ItemKey)
-{
-	if (ItemKey.Count > 0)
-	{
-		Items.Emplace(ItemKey);
+		LocalDeltaItems[Item] += Count;
 	}
 	else
 	{
-		if (const auto Item = Items.Find(ItemKey))
+		LocalDeltaItems.Add(Item, Count);
+	}
+
+	OnLocalUpdateItem.Broadcast(Item, LocalDeltaItems[Item]);
+
+	if (bForceSync || LocalDeltaItems.Num() > MaxLocalDelta)
+	{
+		if (GetOwnerRole() == ROLE_Authority)
 		{
-			Items.Remove(*Item);
+			// directly call server function
+			Net_RequestSyncInventory_Implementation();
+		}
+		else
+		{
+			Net_RequestSyncInventory();
 		}
 	}
 
-	// broadcast the news :
-	OnUpdateItem.Broadcast(ItemKey);
 }
 
-bool UPTRInventoryComponent::Net_OnUpdateItem_Validate(const FPTRInventoryItem& ItemKey) const
+void UPTRInventoryComponent::Net_RequestSyncInventory_Implementation()
 {
-	return true;
+	// Implementation should only run on server
+	ensureMsgf(GetOwnerRole() == ROLE_Authority, TEXT("Function Net_RequestSyncInventory_Implementation should always be run on Server"));
+	Items = MergeMaps(Items,LocalDeltaItems);
+	Net_SyncInventory(LocalDeltaItems);
+	LocalDeltaItems.Empty();
+}
+
+void UPTRInventoryComponent::Net_SyncInventory_Implementation(const TMap<FPTRSoftItemPath, int32> &Changes)
+{
+	if (GetOwnerRole() != ROLE_Authority)
+	{
+		LocalDeltaItems.Empty();
+		Items = MergeMaps(Items,Changes);
+	}
+}
+
+TMap<FPTRSoftItemPath, int32> UPTRInventoryComponent::MergeMaps(const TMap<FPTRSoftItemPath, int32> &A, const TMap<FPTRSoftItemPath, int32> &B)
+{
+	TMap<FPTRSoftItemPath, int32> Retval = A;
+	for (TTuple<FPTRSoftItemPath, int> BItemItr : B)
+	{
+		if (Retval.Contains(BItemItr.Key))
+		{
+			Retval[BItemItr.Key] += BItemItr.Value;
+		}
+		else
+		{
+			if(BItemItr.Value >= 0)
+			Retval.Add(BItemItr);
+		}
+	}
+	return Retval;
 }

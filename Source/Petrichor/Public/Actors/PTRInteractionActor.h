@@ -16,11 +16,12 @@ class APTRInteractionActor : public AActor
 
 public:
 
+    // CTR
     APTRInteractionActor(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 protected:
 
-
+    //
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Interaction")
     virtual void StartInteraction(AActor * Target);
 

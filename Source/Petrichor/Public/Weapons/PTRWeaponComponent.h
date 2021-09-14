@@ -10,8 +10,7 @@
 #include "PTRWeapon.h"
 #include "PTRWeaponComponent.generated.h"
 
-// forward declaration
-struct FPTRInventoryItem;
+struct FPTRSoftItemPath;
 class UPTRInventoryComponent;
 class USkeletalMeshComponent;
 
@@ -141,7 +140,7 @@ private:
 	void OnRep_WeaponStance(EPTRWeaponStance LastWeaponStance);
 
 	UFUNCTION()
-	void OnInventoryChange(const FPTRInventoryItem& Item);
+	void OnInventoryChange(const FPTRSoftItemPath& Item, int32 ItemCount);
 
 
 public:

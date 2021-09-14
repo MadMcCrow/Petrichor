@@ -22,7 +22,7 @@ void UPTRWeaponComponent::InitializeComponent()
 
 	if (auto Inv = GetInventoryComponent())
 	{
-		Inv->OnUpdateItem.AddUniqueDynamic(this, &UPTRWeaponComponent::OnInventoryChange);
+		Inv->OnLocalUpdateItem.AddUniqueDynamic(this, &UPTRWeaponComponent::OnInventoryChange);
 	}
 
 }
@@ -245,7 +245,7 @@ void UPTRWeaponComponent::OnRep_WeaponStance(EPTRWeaponStance LastWeaponStance)
 	}
 }
 
-void UPTRWeaponComponent::OnInventoryChange(const FPTRInventoryItem& Item)
+void UPTRWeaponComponent::OnInventoryChange(const FPTRSoftItemPath& Item, int32 ItemCount)
 {
 	auto SoftItem = FPTRSoftItemPath(Item.ToSoftPath());
 	if (auto ItemClass = SoftItem.GetClass())
