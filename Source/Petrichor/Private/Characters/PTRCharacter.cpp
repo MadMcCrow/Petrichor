@@ -28,6 +28,7 @@ APTRCharacter::APTRCharacter(const FObjectInitializer& ObjectInitializer)
 
 	WeaponComponent = ObjectInitializer.CreateDefaultSubobject<UPTRWeaponComponent>(this, WeaponComponentName);
 	WeaponComponent->SetIsReplicated(true);
+	WeaponComponent->SetWeaponMeshes(FirstPersonWeaponMeshComponent,ThirdPersonWeaponMeshComponent);
 }
 
 void APTRCharacter::OnConstruction(const FTransform& Transform)

@@ -18,8 +18,29 @@ APTRPickupActor::APTRPickupActor(const FObjectInitializer& ObjectInitializer) : 
 	RootComponent = CollisionComponent;
 	MeshComponent->SetupAttachment(RootComponent);
 
-	// Bind collision to collision handling function
 	CollisionComponent->OnComponentBeginOverlap.AddUniqueDynamic(this, &APTRPickupActor::OnBeginOverlap);
+
+}
+
+void APTRPickupActor::SetIsDisabled(bool bNewIsDisabled)
+{
+	Super::SetIsDisabled(bNewIsDisabled);
+	SetActorHiddenInGame(GetIsDisabled());
+}
+
+void APTRPickupActor::StartInteraction(AActor* Target)
+{
+	Super::StartInteraction(Target);
+	SetIsDisabled(true);
+	if (HasAuthority())
+	{
+		if (bShouldRespawn)
+		{
+			FTimerDelegate RespawnDel;
+			RespawnDel.BindWeakLambda(this, [this](){SetIsDisabled(false);});
+			GetWorldTimerManager().SetTimer(RespawnTimerHandle, RespawnDel, fRespawnDelay, false);
+		}
+	}
 }
 
 void APTRPickupActor::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

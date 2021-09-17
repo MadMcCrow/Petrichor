@@ -5,6 +5,8 @@
 
 #include "Weapons/PTRWeaponComponent.h"
 
+#include "Engine/AssetManager.h"
+#include "Engine/StreamableManager.h"
 #include "Items/PTRInventoryComponent.h"
 #include "Items/PTRInventoryInterface.h"
 #include "Net/UnrealNetwork.h"
@@ -13,19 +15,20 @@
 UPTRWeaponComponent::UPTRWeaponComponent() : Super()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+	PreviousWeapon = nullptr;
 }
 
-void UPTRWeaponComponent::InitializeComponent()
+void UPTRWeaponComponent::BeginPlay()
 {
-	Super::InitializeComponent();
+	Super::BeginPlay();
 	SetIsReplicated(true);
-
-	if (auto Inv = GetInventoryComponent())
+	if (const auto Inv = GetInventoryComponent())
 	{
 		Inv->OnLocalUpdateItem.AddUniqueDynamic(this, &UPTRWeaponComponent::OnInventoryChange);
 	}
-
 }
+
+
 
 void UPTRWeaponComponent::HolsterWeapon()
 {
@@ -56,93 +59,77 @@ bool UPTRWeaponComponent::IsWeaponDrawn()
 
 void UPTRWeaponComponent::SetWeaponMeshes(USkeletalMeshComponent* FPSWeapon, USkeletalMeshComponent* TPSWeapon)
 {
-	TSoftObjectPtr<USkeletalMesh> WeaponMesh;
+	ThirdPersonWeapon = TPSWeapon;
+	FirstPersonWeapon = FPSWeapon;
+
+
 	if (GetWeapon())
 	{
-		WeaponMesh = GetWeapon()->GetMesh();
-	}
+		USkeletalMesh* WeaponMesh = nullptr;
+		WeaponMesh = GetWeapon()->GetMesh().Get();
 
-	FirstPersonWeapon = FPSWeapon;
-	if (FirstPersonWeapon)
-	{
-		FirstPersonWeapon->SetSkeletalMesh(WeaponMesh.Get(), true);
-	}
-
-	ThirdPersonWeapon = TPSWeapon;
-	if (ThirdPersonWeapon)
-	{
-		ThirdPersonWeapon->SetSkeletalMesh(WeaponMesh.Get(), true);
-
-		// update master pose component
 		if (FirstPersonWeapon)
-			ThirdPersonWeapon->SetMasterPoseComponent(FirstPersonWeapon, true);
+		{
+			FirstPersonWeapon->SetSkeletalMesh(WeaponMesh, true);
+		}
+		if (ThirdPersonWeapon)
+		{
+			ThirdPersonWeapon->SetSkeletalMesh(WeaponMesh, true);
+			// update master pose component
+			if (FirstPersonWeapon)
+			{
+				ThirdPersonWeapon->SetMasterPoseComponent(FirstPersonWeapon, true);
+			}
+		}
 	}
-
 }
 
 void UPTRWeaponComponent::SetWeapon(TSoftObjectPtr<UPTRWeapon> NewWeapon)
 {
-	// whether we are server or active client, we're gonna do all the switching
-	// when server reaches final decision, we will
+	// Server :
 	if (GetOwnerRole() == ROLE_Authority)
 	{
-		// Update Weapon for player
-		if (WeaponItems.Contains(NewWeapon) && !NewWeapon.IsNull())
-		{
-			// this will trigger on Rep
-			ActiveWeapon = NewWeapon.Get();
-
-			// call multicast : (Is it necessary ?)
-			Net_OnSetWeapon(NewWeapon);
-		}
+		Net_SetWeapon_Implementation(NewWeapon);
 	}
 
 	// we're not server but we're gonna do it for ourselves
 	if (GetOwnerRole() == ROLE_AutonomousProxy)
 	{
-		// call server function
+		// ask server to do this
 		Net_SetWeapon(NewWeapon);
 
 		// in the meantime we shall do it ourselves
-		if (WeaponItems.Contains(NewWeapon) && !NewWeapon.IsNull())
 		{
 			// this will trigger on Rep
 			ActiveWeapon = NewWeapon.Get();
-			OnWeaponSet();
+			Net_OnSetWeapon_Implementation(); // we know this will be called, better do it now
 		}
 	}
 }
 
 void UPTRWeaponComponent::AddWeapon(TSoftObjectPtr<UPTRWeapon> NewWeapon)
 {
-	//	TODO :
-	// do the same thing no matter your role, except server gets replicated :)
-	if (GetOwnerRole() == ROLE_Authority)
-	{
-
-	}
-	if (GetOwnerRole() == ROLE_AutonomousProxy)
-	{
-
-	}
+	//	TODO : add priority and stuff
+	// for now, only set weapon
+	SetWeapon(NewWeapon);
 }
 
 void UPTRWeaponComponent::OnWeaponSet_Implementation()
 {
-	SetWeaponMeshes(FirstPersonWeapon, ThirdPersonWeapon);
+	// load mesh and set weapon mesh when loaded
+	if (ActiveWeapon)
+	{
+		FStreamableManager& Streamable = UAssetManager::Get().GetStreamableManager();
+		FStreamableDelegate StreamDel;
+		StreamDel.BindWeakLambda(this, [this]() {SetWeaponMeshes(FirstPersonWeapon, ThirdPersonWeapon);});
+		Streamable.RequestAsyncLoad(ActiveWeapon->GetMesh().ToSoftObjectPath(), StreamDel);
+	}
 }
 
 void UPTRWeaponComponent::SetWeaponStance(const EPTRWeaponStance& NewWeaponStance)
 {
 	// for now do the same thing no matter your role, but in the future we could diversify
-	if (GetOwnerRole() == ROLE_Authority)
-	{
-		WeaponStance = NewWeaponStance;
-	}
-	if (GetOwnerRole() == ROLE_AutonomousProxy)
-	{
-		WeaponStance = NewWeaponStance;
-	}
+	WeaponStance = NewWeaponStance;
 }
 
 
@@ -197,23 +184,31 @@ void UPTRWeaponComponent::Net_Fire_Implementation(EPTRFireMode FireMode)
 
 void UPTRWeaponComponent::Net_SetWeapon_Implementation(const TSoftObjectPtr<UPTRWeapon>& NewWeapon)
 {
-	if (GetOwnerRole() == ROLE_Authority)
+	ensureMsgf(GetOwnerRole() == ROLE_Authority, TEXT("Net_SetWeapon_Implementation: this must run on server"));
+
+	// check this is in inventory
+	if (!GetInventoryComponent()->HasItem(FPTRSoftItemPath(NewWeapon)) || NewWeapon.IsNull())
 	{
-		// todo : check if in inventory, then add to list if not present then switch to it
-
-
+		return;
 	}
+	// this will trigger on Rep
+	ActiveWeapon = NewWeapon.LoadSynchronous(); // we need to load item : will this work over network ?
+	Net_OnSetWeapon(); // multicast to other players
 }
 
-void UPTRWeaponComponent::Net_OnSetWeapon_Implementation(const TSoftObjectPtr<UPTRWeapon>& NewWeapon)
+void UPTRWeaponComponent::Net_OnSetWeapon_Implementation()
 {
-	// Update Mesh
-	SetWeaponMeshes(FirstPersonWeapon, ThirdPersonWeapon);
+	if (PreviousWeapon != ActiveWeapon)
+	{
+		SetWeaponMeshes(FirstPersonWeapon, ThirdPersonWeapon); 	// Update Mesh
+		Net_SetWeaponStance(EPTRWeaponStance::Idle);
+		OnWeaponSet();
+	}
+	PreviousWeapon = ActiveWeapon;
 }
 
 void UPTRWeaponComponent::Net_SetWeaponStance_Implementation(EPTRWeaponStance NewWeaponStance)
 {
-
 	WeaponStance = NewWeaponStance;
 }
 
@@ -247,8 +242,9 @@ void UPTRWeaponComponent::OnRep_WeaponStance(EPTRWeaponStance LastWeaponStance)
 
 void UPTRWeaponComponent::OnInventoryChange(const FPTRSoftItemPath& Item, int32 ItemCount)
 {
-	auto SoftItem = FPTRSoftItemPath(Item.ToSoftPath());
-	if (auto ItemClass = SoftItem.GetClass())
+	const auto SoftItem = FPTRSoftItemPath(Item.ToSoftPath());
+	const auto ItemClass = SoftItem.GetClass();
+	if (ItemClass)
 	{
 		if (ItemClass->IsChildOf(UPTRWeapon::StaticClass()))
 		{

@@ -27,7 +27,10 @@ public:
 	// Sets default values for this component's properties
 	UPTRWeaponComponent();
 
-	virtual void InitializeComponent() override;
+	// <UActorComponent api>
+	virtual void BeginPlay() override;
+	// <\UActorComponent api>
+
 
 	/**
 	 *	@fn HolsterWeapon
@@ -97,9 +100,9 @@ protected:
 	 *	Update what we should change when weapon change
 	 */
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
-	void Net_OnSetWeapon(const TSoftObjectPtr<UPTRWeapon>& NewWeapon);
-	void Net_OnSetWeapon_Implementation(const TSoftObjectPtr<UPTRWeapon>& NewWeapon);
-	bool Net_OnSetWeapon_Validate(const TSoftObjectPtr<UPTRWeapon>& NewWeapon)	{return true;}
+	void Net_OnSetWeapon();
+	void Net_OnSetWeapon_Implementation();
+	bool Net_OnSetWeapon_Validate()	{return true;}
 
 	/**
 	 *	Update how weapon animation should behave, this is to message the server about our change.
@@ -109,13 +112,7 @@ protected:
 	void Net_SetWeaponStance_Implementation(EPTRWeaponStance NewWeaponStance);
 	bool Net_SetWeaponStance_Validate(EPTRWeaponStance NewWeaponStance)	{return true;}
 
-
-
 private:
-
-
-	UPROPERTY(Transient, DuplicateTransient)
-	TSet<TSoftObjectPtr<UPTRWeapon>> WeaponItems;
 
 	/** Only makes sens for owner */
 	UPROPERTY(Transient, DuplicateTransient)
@@ -133,6 +130,10 @@ private:
 	UPROPERTY(Transient, DuplicateTransient, ReplicatedUsing="OnRep_WeaponStance")
 	EPTRWeaponStance WeaponStance;
 
+	/** PreviousWeapon : Last set weapon */
+	UPROPERTY(Transient, DuplicateTransient)
+	UPTRWeapon* PreviousWeapon;
+
 	UFUNCTION()
 	void OnRep_ActiveWeapon(UPTRWeapon* LastActiveWeapon);
 
@@ -147,6 +148,7 @@ public:
 
 	// for quick access
 	UPTRInventoryComponent* GetInventoryComponent() const;
+
 
 	FORCEINLINE TMap<EPTRCharacterViewType, USkeletalMeshComponent*> GetWeaponMeshes() const {return {{EPTRCharacterViewType::FirstPerson, FirstPersonWeapon}, {EPTRCharacterViewType::ThirdPerson,ThirdPersonWeapon}};}
 	FORCEINLINE UPTRWeapon* GetWeapon() const {return ActiveWeapon;}
