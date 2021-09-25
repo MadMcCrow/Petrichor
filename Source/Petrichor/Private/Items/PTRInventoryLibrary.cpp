@@ -2,8 +2,6 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with Petrichor. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
-
 #include "Items/PTRInventoryLibrary.h"
 #include "Items/PTRInventoryComponent.h"
 #include "Items/PTRInventoryInterface.h"

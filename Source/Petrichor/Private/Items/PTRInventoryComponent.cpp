@@ -39,33 +39,47 @@ bool UPTRInventoryComponent::RemoveItem(const FPTRSoftItemPath& Item, int32 Coun
 	return true;
 }
 
-int32 UPTRInventoryComponent::ItemCount(const FPTRSoftItemPath& Item) const
+int32 UPTRInventoryComponent::ItemCount(const FPTRSoftItemPath& Item, bool bSynchronisedOnly /*= false */) const
 {
 	if (Item.IsNull())
 	{
 		return 0;
 	}
 
-	if (const auto FoundItem = GetItems().Find(Item))
+	// Choose set to use, then find ID in set
+	const TSet<FPTRInventoryItem> Inventory = bSynchronisedOnly ? Items : ApplyChanges(Items, LocalDeltaItems);  
+	const auto ItemSetId = Inventory.FindId(FPTRInventoryItem(Item,0));
+	if (ItemSetId.IsValidId())
 	{
-		return *FoundItem;
+		return Inventory[ItemSetId].GetCount();
 	}
 	return 0;
 }
 
-bool UPTRInventoryComponent::HasItem(const FPTRSoftItemPath& Item) const
+bool UPTRInventoryComponent::HasItem(const FPTRSoftItemPath& Item, bool bSynchronisedOnly /*= false */)const
 {
-	return ItemCount(Item) > 0;
+	return ItemCount(Item, bSynchronisedOnly) > 0;
 }
 
-TMap<FPTRSoftItemPath, int32> UPTRInventoryComponent::GetItems(bool bSynchronisedOnly /*= false */) const
+TArray<FPTRSoftItemPath> UPTRInventoryComponent::GetItems(bool bSynchronisedOnly /*= false */) const
 {
+	TArray<FPTRInventoryItem> Inventory;
 	if (bSynchronisedOnly)
 	{
-		return Items;
+		Inventory=  Items.Array();
+	}
+	else
+	{
+		Inventory =  ApplyChanges(Items,LocalDeltaItems).Array();
 	}
 
-	return MergeMaps(Items, LocalDeltaItems);
+	TArray<FPTRSoftItemPath> ItemPaths;
+	ItemPaths.Reserve(Inventory.Num());
+	for(auto ArrItr = Inventory.CreateConstIterator(); ArrItr;++ArrItr)
+	{
+		ItemPaths.Add(ArrItr->GetPath());
+	}
+	return ItemPaths;
 }
 
 void UPTRInventoryComponent::InitInventory(const TMap<FPTRSoftItemPath, int32> &InitItems)
@@ -81,17 +95,13 @@ void UPTRInventoryComponent::InitInventory(const TMap<FPTRSoftItemPath, int32> &
 
 void UPTRInventoryComponent::UpdateItem(const FPTRSoftItemPath& Item, int32 Count, bool bForceSync /*= false*/)
 {
-	if (LocalDeltaItems.Contains(Item))
-	{
-		LocalDeltaItems[Item] += Count;
-	}
-	else
-	{
-		LocalDeltaItems.Add(Item, Count);
-	}
+	// add change to list of changes
+	const int32 NewIdx = LocalDeltaItems.Add(FPTRInventoryItem(Item, Count));
+	
+	// Broadcast with new count
+	OnLocalUpdateItem.Broadcast(Item, ItemCount(Item));
 
-	OnLocalUpdateItem.Broadcast(Item, LocalDeltaItems[Item]);
-
+	// Sync if necessary
 	if (bForceSync || LocalDeltaItems.Num() > MaxLocalDelta)
 	{
 		if (GetOwnerRole() == ROLE_Authority)
@@ -111,33 +121,36 @@ void UPTRInventoryComponent::Net_RequestSyncInventory_Implementation()
 {
 	// Implementation should only run on server
 	ensureMsgf(GetOwnerRole() == ROLE_Authority, TEXT("Function Net_RequestSyncInventory_Implementation should always be run on Server"));
-	Items = MergeMaps(Items,LocalDeltaItems);
+	Items = ApplyChanges(Items,LocalDeltaItems);
 	Net_SyncInventory(LocalDeltaItems);
 	LocalDeltaItems.Empty();
 }
 
-void UPTRInventoryComponent::Net_SyncInventory_Implementation(const TMap<FPTRSoftItemPath, int32> &Changes)
+void UPTRInventoryComponent::Net_SyncInventory_Implementation(const TArray<FPTRInventoryItem> &Changes)
 {
 	if (GetOwnerRole() != ROLE_Authority)
 	{
 		LocalDeltaItems.Empty();
-		Items = MergeMaps(Items,Changes);
+		Items = ApplyChanges(Items,Changes);
 	}
 }
 
-TMap<FPTRSoftItemPath, int32> UPTRInventoryComponent::MergeMaps(const TMap<FPTRSoftItemPath, int32> &A, const TMap<FPTRSoftItemPath, int32> &B)
+TSet<FPTRInventoryItem> UPTRInventoryComponent::ApplyChanges(const TSet<FPTRInventoryItem> &Base, const TArray<FPTRInventoryItem> &Changes)
 {
-	TMap<FPTRSoftItemPath, int32> Retval = A;
-	for (TTuple<FPTRSoftItemPath, int> BItemItr : B)
+	// copy base
+	TSet<FPTRInventoryItem> Retval = Base;
+	// aplly changes 
+	for (const auto& ChangeItr : Changes)
 	{
-		if (Retval.Contains(BItemItr.Key))
+		// modify already present value
+		if (Base.Contains(ChangeItr))
 		{
-			Retval[BItemItr.Key] += BItemItr.Value;
+			Retval[Retval.FindId(ChangeItr)].UpdateCount(ChangeItr.GetCount());
 		}
-		else
+		else 
 		{
-			if(BItemItr.Value >= 0)
-			Retval.Add(BItemItr);
+			ensureMsgf(ChangeItr.GetCount() >0, TEXT("UPTRInventoryComponent: trying to remove item while not in base"));
+			Retval.Add(FPTRInventoryItem(ChangeItr));
 		}
 	}
 	return Retval;

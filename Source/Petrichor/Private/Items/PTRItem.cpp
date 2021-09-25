@@ -17,7 +17,7 @@ void UPTRItem::PreSave(const ITargetPlatform* TargetPlatform)
 {
 #if WITH_EDITOR
 	UpdateItemInternal();
-#endif WITH_EDITOR
+#endif // WITH_EDITOR
 }
 
 void UPTRItem::UpdateItemInternal()

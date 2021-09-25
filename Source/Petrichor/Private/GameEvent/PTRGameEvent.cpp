@@ -2,8 +2,6 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with Petrichor. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
-
 #include "GameEvent/PTRGameEvent.h"
 
 DEFINE_LOG_CATEGORY(LogPTRGameEvent);
@@ -160,8 +158,7 @@ void UPTRGameEvent::Net_StartClientEvent_Implementation(AActor* Source, AActor* 
 	}
 }
 
-
-inline void UPTRGameEvent::Net_EndClientEvent_Implementation(bool bEndSuccess)
+void UPTRGameEvent::Net_EndClientEvent_Implementation(bool bEndSuccess)
 {
 	if (GetLocalRole() != ROLE_Authority)
 	{

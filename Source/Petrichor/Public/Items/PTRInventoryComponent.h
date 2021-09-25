@@ -24,6 +24,117 @@ DECLARE_LOG_CATEGORY_EXTERN(LogPTRInventory, Log, All);
  */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInventoryItemChange, const FPTRSoftItemPath &, Item, int32, Count);
 
+
+
+/**
+ *	@struct FPTRInventoryItem
+ *	This replaces TMap as TMap does not bode well with networking (at least on linux)
+ */
+USTRUCT(BlueprintType, Category="Petrichor|Items")
+struct FPTRInventoryItem
+{
+    GENERATED_BODY()
+
+	// Good CTR
+    FPTRInventoryItem(const FPTRSoftItemPath& Item, int32 Num = 0)
+    : ItemPath(Item)
+    , Count(Num)
+    {}
+
+	// default CTR
+    FPTRInventoryItem()
+    : ItemPath(FPTRSoftItemPath())
+    , Count(0)
+    {}
+
+protected:
+
+    /** What Item */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FPTRSoftItemPath ItemPath;
+
+    /** How many */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    int32 Count;
+
+public:
+
+    // <getters>
+
+    FORCEINLINE const FPTRSoftItemPath& GetPath() const {return ItemPath;}
+    FORCEINLINE const int32& GetCount() const           {return Count;}
+    FORCEINLINE TPair<FPTRSoftItemPath, int32> GetPair() const {return TPair<FPTRSoftItemPath, int32>(ItemPath, Count);}
+
+    // </getters>
+
+	// <setters>
+    FORCEINLINE void SetCount(int32 NewCount)           {Count = NewCount;}
+  	FORCEINLINE void UpdateCount(int32 Offset)           {Count += Offset;}
+	// </setters>
+    
+	// <back-end>
+
+    //X& operator+=(const X& rhs)
+
+
+    /** Serializer to simplify it's serialisation */
+    bool Serialize(FArchive& Ar)
+    {
+		if (Ar.IsSaving())
+		{
+			FString Path = ItemPath.ToSoftPath().ToString();
+        	Ar << Path;
+		}
+		else
+		{
+			FString Path;
+			Ar << Path;
+			ItemPath = FSoftObjectPath(Path);
+		}
+        Ar << Count;
+        return true;
+    }
+
+    /** Serializer to simplify it's serialisation */
+    bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess)
+    {
+		Serialize(Ar);
+        return true;
+    }
+
+    /** Type Hash for use in TSet   */
+    friend uint32 GetTypeHash(const FPTRInventoryItem& Item)
+    {
+        return GetTypeHash(Item.GetPath());
+    }
+
+    /** == operator for use in TSet   */
+    // TODO : Check if this does not causes issues with counting item
+    bool operator==(const FPTRInventoryItem& rhs) const
+    {
+        return rhs.GetPath() == GetPath();
+    }
+
+
+    // </back-end>
+
+};
+
+
+// register the serialiser for the Soft Item Path
+template<>
+struct TStructOpsTypeTraits<FPTRInventoryItem> : public TStructOpsTypeTraitsBase2<FPTRInventoryItem>
+{
+    enum
+    {
+        WithSerializer	= true, // might causes errors
+        WithNetSerializer	= true,
+    };
+};
+
+
+
+
 /**
  *  UPTRInventoryComponent
  *  @brief handles Players Inventory
@@ -62,7 +173,7 @@ public:
 	 *  @return The amount of the item stored, or 0 if not present
 	 */
 	UFUNCTION(BlueprintPure, Category="Inventory")
-	int32 ItemCount(const FPTRSoftItemPath& Item) const;
+	int32 ItemCount(const FPTRSoftItemPath& Item, bool bSynchronisedOnly = false ) const;
 
 	/**
 	 *  ItemCount
@@ -70,7 +181,7 @@ public:
 	 *  @return The amount of the item stored, or 0 if not present
 	 */
 	UFUNCTION(BlueprintPure, Category="Inventory")
-	bool HasItem(const FPTRSoftItemPath& Item) const;
+	bool HasItem(const FPTRSoftItemPath& Item, bool bSynchronisedOnly = false ) const;
 
 	/**
 	*  GetItems
@@ -78,7 +189,7 @@ public:
 	*  @param bSynchronisedOnly	 if true, Only return the items has validated by server
 	*/
 	UFUNCTION(BlueprintPure, Category="Inventory")
-	TMap<FPTRSoftItemPath, int32> GetItems(bool bSynchronisedOnly = false) const;
+	TArray<FPTRSoftItemPath> GetItems(bool bSynchronisedOnly = false) const;
 
 
 	/**
@@ -143,9 +254,9 @@ protected:
 	 *	@param Changes	The changes to apply to @see Items
 	 */
 	UFUNCTION(Client, Reliable, WithValidation)
-	void Net_SyncInventory(const TMap<FPTRSoftItemPath, int32> &Changes);
-	virtual void Net_SyncInventory_Implementation(const TMap<FPTRSoftItemPath, int32> &Changes);
-	virtual bool Net_SyncInventory_Validate(const TMap<FPTRSoftItemPath, int32> &Changes) const {return true;}
+	void Net_SyncInventory(const TArray<FPTRInventoryItem>  &Changes);
+	virtual void Net_SyncInventory_Implementation(const TArray<FPTRInventoryItem> &Changes);
+	virtual bool Net_SyncInventory_Validate(const TArray<FPTRInventoryItem> &Changes) const {return true;}
 
 
 
@@ -160,22 +271,22 @@ private:
 	 *  @note	Using TMap for simplicity
 	 */
 	UPROPERTY(Transient, VisibleAnywhere, Category="Inventory")
-	TMap<FPTRSoftItemPath, int32> Items;
+	TSet<FPTRInventoryItem> Items;
 
 	/**
 	 *	LocalDeltaItems
-	 *	@note all deltas to the Items
+	 *	@note all deltas to the Items, not merged
 	 *	@brief The locally changes in Items
 	 */
 	UPROPERTY(Transient, VisibleAnywhere, Category="Inventory")
-	TMap<FPTRSoftItemPath, int32> LocalDeltaItems;
+	TArray<FPTRInventoryItem> LocalDeltaItems;
 
 
 	/**
 	 *	Applies B to A
 	 */
 	UFUNCTION()
-	static TMap<FPTRSoftItemPath, int32> MergeMaps(const TMap<FPTRSoftItemPath, int32> &A, const TMap<FPTRSoftItemPath, int32> &B);
+	static TSet<FPTRInventoryItem> ApplyChanges(const TSet<FPTRInventoryItem> &Base, const TArray<FPTRInventoryItem> &Changes);
 
 
 };
