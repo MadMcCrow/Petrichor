@@ -7,6 +7,14 @@
 # Resharper / Ride user specific files
 .idea/
 
+# Kdevlop
+.kdev4
+.pri
+.pro
+
+#Cmake
+cmake*
+
 # Compiled Object files
 *.slo
 *.lo
