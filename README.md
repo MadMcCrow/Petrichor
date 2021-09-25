@@ -8,7 +8,7 @@ Petrichor is an old school FPS made with UE4.
 
 ### Built with Unreal Engine
 
-Build Unreal Engine 4.25. this game is being developped on a linux machine. 
+Confirmed working on a linux machine with UE5
 
 ## Getting Started
 
